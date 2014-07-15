@@ -111,7 +111,7 @@ namespace DotNetNuke.UI.Containers
         {
             get
             {
-                return PortalController.GetCurrentPortalSettings();
+                return PortalController.Instance.GetCurrentPortalSettings();
             }
         }
 		

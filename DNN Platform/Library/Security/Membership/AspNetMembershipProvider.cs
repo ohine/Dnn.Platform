@@ -257,7 +257,7 @@ namespace DotNetNuke.Security.Membership
                                                           displayName,
                                                           updatePassword,
                                                           isApproved,
-                                                          UserController.GetCurrentUserInfo().UserID));
+                                                          UserController.Instance.GetCurrentUserInfo().UserID));
             }
             catch (Exception ex)
             {
@@ -716,11 +716,10 @@ namespace DotNetNuke.Security.Membership
             Requires.NotNullOrEmpty("newUsername", newUsername);
 
             _dataProvider.ChangeUsername(userId, newUsername);
-            var objEventLog = new EventLogController();
-            objEventLog.AddLog("userId",
+            EventLogController.Instance.AddLog("userId",
                                userId.ToString(),
-                               PortalController.GetCurrentPortalSettings(),
-                               UserController.GetCurrentUserInfo().UserID,
+                               PortalController.Instance.GetCurrentPortalSettings(),
+                               UserController.Instance.GetCurrentUserInfo().UserID,
                                EventLogController.EventLogType.USERNAME_UPDATED);
             DataCache.ClearCache();          
         }
@@ -848,7 +847,6 @@ namespace DotNetNuke.Security.Membership
         public override UserCreateStatus CreateUser(ref UserInfo user)
         {
             UserCreateStatus createStatus = ValidateForProfanity(user);
-            EventLogController aLog = new EventLogController();
             string service = HttpContext.Current != null ? HttpContext.Current.Request.Params["state"] : string.Empty;
 
             if (createStatus == UserCreateStatus.AddUser)
@@ -1441,9 +1439,7 @@ namespace DotNetNuke.Security.Membership
                 else
                 {
                     //Next try the Database
-                    onlineUser =
-                        (OnlineUserInfo)
-                        CBO.FillObject(_dataProvider.GetOnlineUser(user.UserID), typeof (OnlineUserInfo));
+                    onlineUser = CBO.FillObject<OnlineUserInfo>(_dataProvider.GetOnlineUser(user.UserID));
                     if (onlineUser != null)
                     {
                         isOnline = true;
@@ -1618,7 +1614,7 @@ namespace DotNetNuke.Security.Membership
                                      user.PasswordResetToken,
                                      user.PasswordResetExpiration,
                                      user.IsDeleted,
-                                     UserController.GetCurrentUserInfo().UserID);
+                                     UserController.Instance.GetCurrentUserInfo().UserID);
 
             //Persist the Profile to the Data Store
             ProfileController.UpdateUserProfile(user);

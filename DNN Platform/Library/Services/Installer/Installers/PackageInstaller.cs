@@ -35,8 +35,6 @@ using DotNetNuke.Services.Installer.Packages;
 
 namespace DotNetNuke.Services.Installer.Installers
 {
-    using System.Linq;
-
     /// -----------------------------------------------------------------------------
     /// <summary>
     /// The PackageInstaller class is an Installer for Packages
@@ -407,19 +405,16 @@ namespace DotNetNuke.Services.Installer.Installers
                         }
                         else
                         {
-                            
                             Log.AddFailure(Util.INSTALL_Failed + " - " + compInstaller.Type);
-
                             isCompleted = false;
                             break;
                         }
                     }
                 }
             }
-            catch (Exception exc)
+            catch (Exception ex)
             {
-                Log.AddFailure(Util.INSTALL_Aborted + " - " + Package.Name);
-                Log.AddFailure(exc);
+                Log.AddFailure(Util.INSTALL_Aborted + " - " + Package.Name + ":" + ex.Message);
             }
             if (isCompleted)
             {
