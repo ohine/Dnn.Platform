@@ -381,41 +381,43 @@ namespace DotNetNuke.Framework.JavaScriptLibraries
 
         private static void RegisterScript(Page page, JavaScriptLibrary jsl)
         {
-            ClientResourceManager.RegisterScript(page, GetScriptPath(jsl), GetFileOrder(jsl), GetScriptLocation(jsl));
+            if (!string.IsNullOrWhiteSpace(jsl.FileName)) { 
+                ClientResourceManager.RegisterScript(page, GetScriptPath(jsl), GetFileOrder(jsl), GetScriptLocation(jsl));
 
-            //workaround to support IE specific script unti we move to IE version that no longer requires this
-            if (jsl.LibraryName == CommonJs.jQueryFileUpload)
-            {
-                ClientResourceManager.RegisterScript(page,
-                    "~/Resources/Shared/Scripts/jquery/jquery.iframe-transport.js");
-            }
-
-            if (Host.CdnEnabled && !String.IsNullOrEmpty(jsl.ObjectName))
-            {
-                string pagePortion;
-                switch (jsl.PreferredScriptLocation)
+                //workaround to support IE specific script unti we move to IE version that no longer requires this
+                if (jsl.LibraryName == CommonJs.jQueryFileUpload)
                 {
-                    case ScriptLocation.PageHead:
-
-                        pagePortion = "ClientDependencyHeadJs";
-                        break;
-                    case ScriptLocation.BodyBottom:
-                        pagePortion = "ClientResourcesFormBottom";
-                        break;
-                    case ScriptLocation.BodyTop:
-                        pagePortion = "BodySCRIPTS";
-                        break;
-                    default:
-                        pagePortion = "BodySCRIPTS";
-                        break;
+                    ClientResourceManager.RegisterScript(page,
+                        "~/Resources/Shared/Scripts/jquery/jquery.iframe-transport.js");
                 }
-                Control scriptloader = page.FindControl(pagePortion);
-                var fallback = new DnnJsIncludeFallback(jsl.ObjectName, VirtualPathUtility.ToAbsolute("~/Resources/libraries/" + jsl.LibraryName + "/" + Globals.FormatVersion(jsl.Version, "00", 3, "_") + "/" + jsl.FileName));
-                if (scriptloader != null)
+
+                if (Host.CdnEnabled && !String.IsNullOrEmpty(jsl.ObjectName))
                 {
-                    //add the fallback control after script loader.
-                    var index = scriptloader.Parent.Controls.IndexOf(scriptloader);
-                    scriptloader.Parent.Controls.AddAt(index + 1, fallback);
+                    string pagePortion;
+                    switch (jsl.PreferredScriptLocation)
+                    {
+                        case ScriptLocation.PageHead:
+
+                            pagePortion = "ClientDependencyHeadJs";
+                            break;
+                        case ScriptLocation.BodyBottom:
+                            pagePortion = "ClientResourcesFormBottom";
+                            break;
+                        case ScriptLocation.BodyTop:
+                            pagePortion = "BodySCRIPTS";
+                            break;
+                        default:
+                            pagePortion = "BodySCRIPTS";
+                            break;
+                    }
+                    Control scriptloader = page.FindControl(pagePortion);
+                    var fallback = new DnnJsIncludeFallback(jsl.ObjectName, VirtualPathUtility.ToAbsolute("~/Resources/libraries/" + jsl.LibraryName + "/" + Globals.FormatVersion(jsl.Version, "00", 3, "_") + "/" + jsl.FileName));
+                    if (scriptloader != null)
+                    {
+                        //add the fallback control after script loader.
+                        var index = scriptloader.Parent.Controls.IndexOf(scriptloader);
+                        scriptloader.Parent.Controls.AddAt(index + 1, fallback);
+                    }
                 }
             }
         }
