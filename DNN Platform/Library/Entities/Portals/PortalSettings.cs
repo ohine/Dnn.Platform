@@ -787,6 +787,33 @@ namespace DotNetNuke.Entities.Portals
                 return PortalController.GetPortalSettingAsInteger("SMTPMaxIdleTime", PortalId,  0);
             }
         }
+
+        /// <summary>
+        /// Get the IsLocked value, used to put the current portal into maintenance mode. This is a flag which can be used to disable any actions which update the database.
+        /// </summary>
+        public bool IsLocked
+        {
+            get
+            {
+                return this.IsThisPortalLocked || Host.Host.IsLocked;
+            }
+        }
+
+        public bool IsThisPortalLocked
+        {
+            get
+            {
+                return PortalController.GetPortalSettingAsBoolean("IsLocked", PortalId, false);
+            }
+        }
+
+        public int LockedByUserId
+        {
+            get
+            {
+                return PortalController.GetPortalSettingAsInteger("LockedByUserId", PortalId, Null.NullInteger);
+            }
+        }
         #endregion
 
         #region IPropertyAccess Members

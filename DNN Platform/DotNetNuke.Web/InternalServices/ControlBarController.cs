@@ -48,6 +48,8 @@ using DotNetNuke.Web.Client.ClientResourceManagement;
 
 namespace DotNetNuke.Web.InternalServices
 {
+    using DotNetNuke.Entities.Controllers;
+
     [DnnAuthorize]
     public class ControlBarController : DnnApiController
     {
@@ -449,6 +451,47 @@ namespace DotNetNuke.Web.InternalServices
             
             Controller.SaveBookMark(PortalSettings.PortalId, UserInfo.UserID, bookmark.Title, bookmark.Bookmark);
             
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        [HttpGet]
+        public HttpResponseMessage LockInstance(bool LockingFlag)
+        {
+            if (UserController.Instance.GetCurrentUserInfo().IsSuperUser)
+            {
+                if (LockingFlag)
+                {
+                    // we are locking
+                    HostController.Instance.Update("IsLocked", true.ToString(), true);
+                }
+                else
+                {
+                    //we are unlocking
+                    HostController.Instance.Update("IsLocked", false.ToString(), true);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.InternalServerError);
+        }
+
+        [HttpGet]
+        [ValidateAntiForgeryToken]
+        [RequireHost]
+        public HttpResponseMessage LockSite(bool LockingFlag)
+        {
+            if (LockingFlag)
+            {
+                // we are locking
+                PortalController.UpdatePortalSetting(this.PortalSettings.PortalId, "IsLocked", true.ToString(), true);
+            }
+            else
+            {
+                //we are unlocking
+                PortalController.UpdatePortalSetting(this.PortalSettings.PortalId, "IsLocked", false.ToString(), true);
+            }
+
             return Request.CreateResponse(HttpStatusCode.OK);
         }
 

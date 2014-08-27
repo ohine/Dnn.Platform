@@ -1842,12 +1842,29 @@ namespace DotNetNuke.Entities.Host
 				return timeout;
 			}
 		}
+
         /// <summary>
         /// Get the IgnoreWhiteList value, used during portal template import.
         /// </summary>
         static bool IgnoreWhiteList
         {
             get { return HostController.Instance.GetBoolean("IgnoreWhiteList", false); }
+        }
+
+        /// <summary>
+        /// Get the IsLocked value, used to put the entire instance into maintenance mode
+        /// </summary>
+        public static bool IsLocked
+        {
+            get { return HostController.Instance.GetBoolean("IsLocked", false); }
+        }
+
+        public int LockedByUserId
+        {
+            get
+            {
+                return HostController.Instance.GetInteger("LockedByUserId", Null.NullInteger);
+            }
         }
 
         #endregion

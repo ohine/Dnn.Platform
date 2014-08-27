@@ -541,203 +541,274 @@ namespace DotNetNuke.UI.Modules
             _moduleGenericActions = new ModuleAction(GetNextActionID(), Localization.GetString("ModuleGenericActions.Action", Localization.GlobalResourceFile), string.Empty, string.Empty, string.Empty);
             int maxActionId = Null.NullInteger;
 
-            //check if module Implements Entities.Modules.IActionable interface
-            var actionable = _moduleControl as IActionable;
-            if (actionable != null)
+            if (!PortalSettings.Current.IsLocked)
             {
-                _moduleSpecificActions = new ModuleAction(GetNextActionID(), Localization.GetString("ModuleSpecificActions.Action", Localization.GlobalResourceFile), string.Empty, string.Empty, string.Empty);
 
-                ModuleActionCollection moduleActions = actionable.ModuleActions;
-
-                foreach (ModuleAction action in moduleActions)
+                //check if module Implements Entities.Modules.IActionable interface
+                var actionable = _moduleControl as IActionable;
+                if (actionable != null)
                 {
-                    if (ModulePermissionController.HasModuleAccess(action.Secure, "CONTENT", Configuration))
-                    {
-                        if (String.IsNullOrEmpty(action.Icon))
-                        {
-                            action.Icon = "edit.gif";
-                        }
-                        if (action.ID > maxActionId)
-                        {
-                            maxActionId = action.ID;
-                        }
-                        _moduleSpecificActions.Actions.Add(action);
+                    _moduleSpecificActions = new ModuleAction(
+                        GetNextActionID(),
+                        Localization.GetString("ModuleSpecificActions.Action", Localization.GlobalResourceFile),
+                        string.Empty,
+                        string.Empty,
+                        string.Empty);
 
-                        if (!UIUtilities.IsLegacyUI(ModuleId, action.ControlKey, PortalId) && action.Url.Contains("ctl"))
+                    ModuleActionCollection moduleActions = actionable.ModuleActions;
+
+                    foreach (ModuleAction action in moduleActions)
+                    {
+                        if (ModulePermissionController.HasModuleAccess(action.Secure, "CONTENT", Configuration))
                         {
-                            action.ClientScript = UrlUtils.PopUpUrl(action.Url, _moduleControl as Control, PortalSettings, true, false);
+                            if (String.IsNullOrEmpty(action.Icon))
+                            {
+                                action.Icon = "edit.gif";
+                            }
+                            if (action.ID > maxActionId)
+                            {
+                                maxActionId = action.ID;
+                            }
+                            _moduleSpecificActions.Actions.Add(action);
+
+                            if (!UIUtilities.IsLegacyUI(ModuleId, action.ControlKey, PortalId)
+                                && action.Url.Contains("ctl"))
+                            {
+                                action.ClientScript = UrlUtils.PopUpUrl(
+                                    action.Url,
+                                    _moduleControl as Control,
+                                    PortalSettings,
+                                    true,
+                                    false);
+                            }
+                        }
+                    }
+                    if (_moduleSpecificActions.Actions.Count > 0)
+                    {
+                        _actions.Add(_moduleSpecificActions);
+                    }
+                }
+
+                //Make sure the Next Action Id counter is correct
+                int actionCount = GetActionsCount(_actions.Count, _actions);
+                if (_nextActionId < maxActionId)
+                {
+                    _nextActionId = maxActionId;
+                }
+                if (_nextActionId < actionCount)
+                {
+                    _nextActionId = actionCount;
+                }
+
+                //Custom injection of Module Settings when shared as ViewOnly
+                if (Configuration != null && (Configuration.IsShared && Configuration.IsShareableViewOnly)
+                    && TabPermissionController.CanAddContentToPage())
+                {
+                    _moduleGenericActions.Actions.Add(
+                        GetNextActionID(),
+                        Localization.GetString("ModulePermissions.Action", Localization.GlobalResourceFile),
+                        "ModulePermissions",
+                        "",
+                        "action_settings.gif",
+                        NavigateUrl(
+                            TabId,
+                            "ModulePermissions",
+                            false,
+                            "ModuleId=" + ModuleId,
+                            "ReturnURL=" + FilterUrl(request)),
+                        false,
+                        SecurityAccessLevel.ViewPermissions,
+                        true,
+                        false);
+                }
+                else
+                {
+                    if (!Globals.IsAdminControl()
+                        && ModulePermissionController.HasModuleAccess(
+                            SecurityAccessLevel.Admin,
+                            "DELETE,MANAGE",
+                            Configuration))
+                    {
+                        if (ModulePermissionController.HasModuleAccess(
+                            SecurityAccessLevel.Admin,
+                            "MANAGE",
+                            Configuration))
+                        {
+                            _moduleGenericActions.Actions.Add(
+                                GetNextActionID(),
+                                Localization.GetString(ModuleActionType.ModuleSettings, Localization.GlobalResourceFile),
+                                ModuleActionType.ModuleSettings,
+                                "",
+                                "action_settings.gif",
+                                NavigateUrl(
+                                    TabId,
+                                    "Module",
+                                    false,
+                                    "ModuleId=" + ModuleId,
+                                    "ReturnURL=" + FilterUrl(request)),
+                                false,
+                                SecurityAccessLevel.Edit,
+                                true,
+                                false);
                         }
                     }
                 }
-                if (_moduleSpecificActions.Actions.Count > 0)
+
+                if (!string.IsNullOrEmpty(Configuration.DesktopModule.BusinessControllerClass))
                 {
-                    _actions.Add(_moduleSpecificActions);
+                    //check if module implements IPortable interface, and user has Admin permissions
+                    if (Configuration.DesktopModule.IsPortable)
+                    {
+                        if (ModulePermissionController.HasModuleAccess(
+                            SecurityAccessLevel.Admin,
+                            "EXPORT",
+                            Configuration))
+                        {
+                            _moduleGenericActions.Actions.Add(
+                                GetNextActionID(),
+                                Localization.GetString(ModuleActionType.ExportModule, Localization.GlobalResourceFile),
+                                "",
+                                "",
+                                "action_export.gif",
+                                NavigateUrl(
+                                    PortalSettings.ActiveTab.TabID,
+                                    "ExportModule",
+                                    false,
+                                    "moduleid=" + ModuleId,
+                                    "ReturnURL=" + FilterUrl(request)),
+                                "",
+                                false,
+                                SecurityAccessLevel.View,
+                                true,
+                                false);
+                        }
+                        if (ModulePermissionController.HasModuleAccess(
+                            SecurityAccessLevel.Admin,
+                            "IMPORT",
+                            Configuration))
+                        {
+                            _moduleGenericActions.Actions.Add(
+                                GetNextActionID(),
+                                Localization.GetString(ModuleActionType.ImportModule, Localization.GlobalResourceFile),
+                                "",
+                                "",
+                                "action_import.gif",
+                                NavigateUrl(
+                                    PortalSettings.ActiveTab.TabID,
+                                    "ImportModule",
+                                    false,
+                                    "moduleid=" + ModuleId,
+                                    "ReturnURL=" + FilterUrl(request)),
+                                "",
+                                false,
+                                SecurityAccessLevel.View,
+                                true,
+                                false);
+                        }
+                    }
+                    if (Configuration.DesktopModule.IsSearchable && Configuration.DisplaySyndicate)
+                    {
+                        AddSyndicateAction();
+                    }
                 }
-            }
 
-            //Make sure the Next Action Id counter is correct
-            int actionCount = GetActionsCount(_actions.Count, _actions);
-            if (_nextActionId < maxActionId)
-            {
-                _nextActionId = maxActionId;
-            }
-            if (_nextActionId < actionCount)
-            {
-                _nextActionId = actionCount;
-            }
-
-            //Custom injection of Module Settings when shared as ViewOnly
-            if (Configuration != null && (Configuration.IsShared && Configuration.IsShareableViewOnly)
-                    && TabPermissionController.CanAddContentToPage())
-            {
-                _moduleGenericActions.Actions.Add(GetNextActionID(),
-                             Localization.GetString("ModulePermissions.Action", Localization.GlobalResourceFile),
-                             "ModulePermissions",
-                             "",
-                             "action_settings.gif",
-                             NavigateUrl(TabId, "ModulePermissions", false, "ModuleId=" + ModuleId, "ReturnURL=" + FilterUrl(request)),
-                             false,
-                             SecurityAccessLevel.ViewPermissions,
-                             true,
-                             false);
-            }
-            else
-            {
-                if (!Globals.IsAdminControl() && ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "DELETE,MANAGE", Configuration))
+                //help module actions available to content editors and administrators
+                const string permisisonList = "CONTENT,DELETE,EDIT,EXPORT,IMPORT,MANAGE";
+                if (ModulePermissionController.HasModulePermission(Configuration.ModulePermissions, permisisonList)
+                    && request.QueryString["ctl"] != "Help" && !Globals.IsAdminControl())
                 {
+                    AddHelpActions();
+                }
+
+                //Add Print Action
+                if (Configuration.DisplayPrint)
+                {
+                    //print module action available to everyone
+                    AddPrintAction();
+                }
+
+                if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Host, "MANAGE", Configuration)
+                    && !Globals.IsAdminControl())
+                {
+                    _moduleGenericActions.Actions.Add(
+                        GetNextActionID(),
+                        Localization.GetString(ModuleActionType.ViewSource, Localization.GlobalResourceFile),
+                        ModuleActionType.ViewSource,
+                        "",
+                        "action_source.gif",
+                        NavigateUrl(
+                            TabId,
+                            "ViewSource",
+                            false,
+                            "ModuleId=" + ModuleId,
+                            "ctlid=" + Configuration.ModuleControlId,
+                            "ReturnURL=" + FilterUrl(request)),
+                        false,
+                        SecurityAccessLevel.Host,
+                        true,
+                        false);
+                }
+
+
+
+                if (!Globals.IsAdminControl()
+                    && ModulePermissionController.HasModuleAccess(
+                        SecurityAccessLevel.Admin,
+                        "DELETE,MANAGE",
+                        Configuration))
+                {
+                    if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "DELETE", Configuration))
+                    {
+                        //Check if this is the owner instance of a shared module.
+                        string confirmText = "confirm('"
+                                             + ClientAPI.GetSafeJSString(Localization.GetString("DeleteModule.Confirm"))
+                                             + "')";
+                        if (!Configuration.IsShared)
+                        {
+                            if (
+                                ModuleController.Instance.GetTabModulesByModule(Configuration.ModuleID)
+                                    .Cast<ModuleInfo>()
+                                    .Any(instance => instance.IsShared))
+                            {
+                                confirmText = "confirm('"
+                                              + ClientAPI.GetSafeJSString(
+                                                  Localization.GetString("DeleteSharedModule.Confirm")) + "')";
+                            }
+                        }
+
+                        _moduleGenericActions.Actions.Add(
+                            GetNextActionID(),
+                            Localization.GetString(ModuleActionType.DeleteModule, Localization.GlobalResourceFile),
+                            ModuleActionType.DeleteModule,
+                            Configuration.ModuleID.ToString(),
+                            "action_delete.gif",
+                            "",
+                            confirmText,
+                            false,
+                            SecurityAccessLevel.View,
+                            true,
+                            false);
+                    }
                     if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "MANAGE", Configuration))
                     {
-                        _moduleGenericActions.Actions.Add(GetNextActionID(),
-                                                          Localization.GetString(ModuleActionType.ModuleSettings, Localization.GlobalResourceFile),
-                                                          ModuleActionType.ModuleSettings,
-                                                          "",
-                                                          "action_settings.gif",
-                                                          NavigateUrl(TabId, "Module", false, "ModuleId=" + ModuleId, "ReturnURL=" + FilterUrl(request)),
-                                                          false,
-                                                          SecurityAccessLevel.Edit,
-                                                          true,
-                                                          false);
+                        _moduleGenericActions.Actions.Add(
+                            GetNextActionID(),
+                            Localization.GetString(ModuleActionType.ClearCache, Localization.GlobalResourceFile),
+                            ModuleActionType.ClearCache,
+                            Configuration.ModuleID.ToString(),
+                            "action_refresh.gif",
+                            "",
+                            false,
+                            SecurityAccessLevel.View,
+                            true,
+                            false);
                     }
-                }
-            }
 
-            if (!string.IsNullOrEmpty(Configuration.DesktopModule.BusinessControllerClass))
-            {
-                //check if module implements IPortable interface, and user has Admin permissions
-                if (Configuration.DesktopModule.IsPortable)
-                {
-                    if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "EXPORT", Configuration))
+                    if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "MANAGE", Configuration))
                     {
-                        _moduleGenericActions.Actions.Add(GetNextActionID(),
-                                     Localization.GetString(ModuleActionType.ExportModule, Localization.GlobalResourceFile),
-                                     "",
-                                     "",
-                                     "action_export.gif",
-                                     NavigateUrl(PortalSettings.ActiveTab.TabID, "ExportModule", false, "moduleid=" + ModuleId, "ReturnURL=" + FilterUrl(request)),
-
-                                     "",
-                                     false,
-                                     SecurityAccessLevel.View,
-                                     true,
-                                     false);
+                        //module movement
+                        AddMenuMoveActions();
                     }
-                    if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "IMPORT", Configuration))
-                    {
-                        _moduleGenericActions.Actions.Add(GetNextActionID(),
-                                     Localization.GetString(ModuleActionType.ImportModule, Localization.GlobalResourceFile),
-                                     "",
-                                     "",
-                                     "action_import.gif",
-                                     NavigateUrl(PortalSettings.ActiveTab.TabID, "ImportModule", false, "moduleid=" + ModuleId, "ReturnURL=" + FilterUrl(request)),
-                                     "",
-                                     false,
-                                     SecurityAccessLevel.View,
-                                     true,
-                                     false);
-                    }
-                }
-                if (Configuration.DesktopModule.IsSearchable && Configuration.DisplaySyndicate)
-                {
-                    AddSyndicateAction();
-                }
-            }
-
-            //help module actions available to content editors and administrators
-            const string permisisonList = "CONTENT,DELETE,EDIT,EXPORT,IMPORT,MANAGE";
-            if (ModulePermissionController.HasModulePermission(Configuration.ModulePermissions, permisisonList) 
-                    && request.QueryString["ctl"] != "Help"
-                    && !Globals.IsAdminControl())
-            {
-                AddHelpActions();
-            }
-
-            //Add Print Action
-            if (Configuration.DisplayPrint)
-            {
-                //print module action available to everyone
-                AddPrintAction();
-            }
-
-            if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Host, "MANAGE", Configuration) && !Globals.IsAdminControl())
-            {
-                _moduleGenericActions.Actions.Add(GetNextActionID(),
-                             Localization.GetString(ModuleActionType.ViewSource, Localization.GlobalResourceFile),
-                             ModuleActionType.ViewSource,
-                             "",
-                             "action_source.gif",
-                             NavigateUrl(TabId, "ViewSource", false, "ModuleId=" + ModuleId, "ctlid=" + Configuration.ModuleControlId, "ReturnURL=" + FilterUrl(request)),
-                             false,
-                             SecurityAccessLevel.Host,
-                             true,
-                             false);
-            }
-
-
-
-            if (!Globals.IsAdminControl() && ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "DELETE,MANAGE", Configuration))
-            {
-                if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "DELETE", Configuration))
-                {
-                    //Check if this is the owner instance of a shared module.
-                    string confirmText = "confirm('" + ClientAPI.GetSafeJSString(Localization.GetString("DeleteModule.Confirm")) + "')";
-                    if (!Configuration.IsShared)
-                    {
-                        if (ModuleController.Instance.GetTabModulesByModule(Configuration.ModuleID).Cast<ModuleInfo>().Any(instance => instance.IsShared))
-                        {
-                            confirmText = "confirm('" + ClientAPI.GetSafeJSString(Localization.GetString("DeleteSharedModule.Confirm")) + "')";
-                        }
-                    }
-
-                    _moduleGenericActions.Actions.Add(GetNextActionID(),
-                                 Localization.GetString(ModuleActionType.DeleteModule, Localization.GlobalResourceFile),
-                                 ModuleActionType.DeleteModule,
-                                 Configuration.ModuleID.ToString(),
-                                 "action_delete.gif",
-                                 "",
-                                 confirmText,
-                                 false,
-                                 SecurityAccessLevel.View,
-                                 true,
-                                 false);
-                }
-                if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "MANAGE", Configuration))
-                {
-                    _moduleGenericActions.Actions.Add(GetNextActionID(),
-                                 Localization.GetString(ModuleActionType.ClearCache, Localization.GlobalResourceFile),
-                                 ModuleActionType.ClearCache,
-                                 Configuration.ModuleID.ToString(),
-                                 "action_refresh.gif",
-                                 "",
-                                 false,
-                                 SecurityAccessLevel.View,
-                                 true,
-                                 false);
-                }
-
-                if (ModulePermissionController.HasModuleAccess(SecurityAccessLevel.Admin, "MANAGE", Configuration))
-                {
-                    //module movement
-                    AddMenuMoveActions();
                 }
             }
 
