@@ -28,8 +28,6 @@ using System.Web.UI.WebControls;
 using DotNetNuke.Entities.Host;
 using DotNetNuke.UI.WebControls;
 
-using Telerik.Web.UI;
-
 #endregion
 
 namespace DotNetNuke.Framework
@@ -60,12 +58,11 @@ namespace DotNetNuke.Framework
         {
 			if (GetScriptManager(page) == null)
             {
-                using (var scriptManager = new RadScriptManager
+                using (var scriptManager = new ScriptManager
 	                {
 		                ID = "ScriptManager", 
 						EnableScriptGlobalization = true, 
-						SupportsPartialRendering = true, 
-						EnableHandlerDetection = false
+						SupportsPartialRendering = true
 	                })
                 {
 					if (page.Form != null)
@@ -75,15 +72,6 @@ namespace DotNetNuke.Framework
 							if (checkCdn)
 							{
 								scriptManager.EnableCdn = Host.EnableMsAjaxCdn;
-								scriptManager.CdnSettings.TelerikCdn = Host.EnableTelerikCdn ? TelerikCdnMode.Enabled : TelerikCdnMode.Disabled;
-								if (scriptManager.CdnSettings.TelerikCdn != TelerikCdnMode.Disabled && !string.IsNullOrEmpty(Host.TelerikCdnBasicUrl))
-								{
-									scriptManager.CdnSettings.BaseUrl = Host.TelerikCdnBasicUrl;
-								}
-								if (scriptManager.CdnSettings.TelerikCdn != TelerikCdnMode.Disabled && !string.IsNullOrEmpty(Host.TelerikCdnSecureUrl))
-								{
-									scriptManager.CdnSettings.BaseSecureUrl = Host.TelerikCdnSecureUrl;
-								}
 							}
 							page.Form.Controls.AddAt(0, scriptManager);
                         }
@@ -97,32 +85,32 @@ namespace DotNetNuke.Framework
                         }
                     }
                 }
-				using (var stylesheetManager = new RadStyleSheetManager { ID = "StylesheetManager", EnableHandlerDetection = false })
-                {
-					if (page.Form != null)
-                    {
-                        try
-                        {
-							if (checkCdn)
-							{
-								stylesheetManager.CdnSettings.TelerikCdn = Host.EnableTelerikCdn ? TelerikCdnMode.Enabled : TelerikCdnMode.Disabled;
-								if (stylesheetManager.CdnSettings.TelerikCdn != TelerikCdnMode.Disabled && !string.IsNullOrEmpty(Host.TelerikCdnBasicUrl))
-								{
-									stylesheetManager.CdnSettings.BaseUrl = Host.TelerikCdnBasicUrl;
-								}
-								if (stylesheetManager.CdnSettings.TelerikCdn != TelerikCdnMode.Disabled && !string.IsNullOrEmpty(Host.TelerikCdnSecureUrl))
-								{
-									stylesheetManager.CdnSettings.BaseSecureUrl = Host.TelerikCdnSecureUrl;
-								}
-							}
-							page.Form.Controls.AddAt(0, stylesheetManager);
-                        }
-                        catch
-                        {
-                            //suppress error adding script manager to support edge-case of module developers custom aspx pages that inherit from basepage and use code blocks
-                        }
-                    }
-                }
+                //using (var stylesheetManager = new RadStyleSheetManager { ID = "StylesheetManager", EnableHandlerDetection = false })
+                //{
+                //    if (page.Form != null)
+                //    {
+                //        try
+                //        {
+                //            if (checkCdn)
+                //            {
+                //                stylesheetManager.CdnSettings.TelerikCdn = Host.EnableTelerikCdn ? TelerikCdnMode.Enabled : TelerikCdnMode.Disabled;
+                //                if (stylesheetManager.CdnSettings.TelerikCdn != TelerikCdnMode.Disabled && !string.IsNullOrEmpty(Host.TelerikCdnBasicUrl))
+                //                {
+                //                    stylesheetManager.CdnSettings.BaseUrl = Host.TelerikCdnBasicUrl;
+                //                }
+                //                if (stylesheetManager.CdnSettings.TelerikCdn != TelerikCdnMode.Disabled && !string.IsNullOrEmpty(Host.TelerikCdnSecureUrl))
+                //                {
+                //                    stylesheetManager.CdnSettings.BaseSecureUrl = Host.TelerikCdnSecureUrl;
+                //                }
+                //            }
+                //            page.Form.Controls.AddAt(0, stylesheetManager);
+                //        }
+                //        catch
+                //        {
+                //            //suppress error adding script manager to support edge-case of module developers custom aspx pages that inherit from basepage and use code blocks
+                //        }
+                //    }
+                //}
             }
         }
 

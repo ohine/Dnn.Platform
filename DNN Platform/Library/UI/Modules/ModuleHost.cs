@@ -46,8 +46,6 @@ using DotNetNuke.Services.ModuleCache;
 using DotNetNuke.UI.WebControls;
 using DotNetNuke.Web.Client.ClientResourceManagement;
 
-using Telerik.Web.UI;
-
 #endregion
 
 namespace DotNetNuke.UI.Modules
@@ -342,19 +340,19 @@ namespace DotNetNuke.UI.Modules
 
         private void LoadAjaxPanel()
         {
-            var loadingPanel = new RadAjaxLoadingPanel { ID = _control.ID + "_Prog", Skin = "Default" };
+            //var loadingPanel = new RadAjaxLoadingPanel { ID = _control.ID + "_Prog", Skin = "Default" };
 
-            Controls.Add(loadingPanel);
+            //Controls.Add(loadingPanel);
 
-            var ajaxPanel = new RadAjaxPanel {
-                ID = _control.ID + "_UP",
-                LoadingPanelID = loadingPanel.ID,
-                RestoreOriginalRenderDelegate = false
-            };
-            InjectMessageControl(ajaxPanel); 
-            ajaxPanel.Controls.Add(_control);
+            //var ajaxPanel = new RadAjaxPanel {
+            //    ID = _control.ID + "_UP",
+            //    LoadingPanelID = loadingPanel.ID,
+            //    RestoreOriginalRenderDelegate = false
+            //};
+            //InjectMessageControl(ajaxPanel); 
+            //ajaxPanel.Controls.Add(_control);
 
-            Controls.Add(ajaxPanel);
+            //Controls.Add(ajaxPanel);
 
         }
 

@@ -28,8 +28,6 @@ using DotNetNuke.Entities.Modules;
 using DotNetNuke.Framework;
 using DotNetNuke.Instrumentation;
 using DotNetNuke.Services.Exceptions;
-using DotNetNuke.Services.Log.EventLog;
-using Telerik.Web.UI;
 
 namespace DotNetNuke.Entities.Tabs
 {

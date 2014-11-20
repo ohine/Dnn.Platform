@@ -22,11 +22,8 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -37,14 +34,11 @@ using DotNetNuke.Entities.Portals;
 using DotNetNuke.Entities.Users;
 using DotNetNuke.Instrumentation;
 using DotNetNuke.Security.Permissions;
-using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.FileSystem;
 using DotNetNuke.Services.Localization;
 
 using ICSharpCode.SharpZipLib.Checksums;
 using ICSharpCode.SharpZipLib.Zip;
-
-using Telerik.Web.UI;
 
 using FileInfo = DotNetNuke.Services.FileSystem.FileInfo;
 
@@ -1450,31 +1444,31 @@ namespace DotNetNuke.Common.Utilities
             return CreateFile(folder, fileName, ((FileManager)fileManager).GetContentType(Path.GetExtension(fileName)), objHtmlInputFile.InputStream, Unzip, true, true);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Obsolete("Deprecated in DNN 6.0.  It has been replaced by FileManager.Instance.AddFile(IFolderInfo folder, string fileName, Stream fileContent, bool overwrite) ")]
-        public static string UploadFile(string RootPath, UploadedFile objHtmlInputFile, string NewFileName)
-        {
-            var fileManager = FileManager.Instance;
-            var folderManager = FolderManager.Instance;
+        //[EditorBrowsable(EditorBrowsableState.Never)]
+        //[Obsolete("Deprecated in DNN 6.0.  It has been replaced by FileManager.Instance.AddFile(IFolderInfo folder, string fileName, Stream fileContent, bool overwrite) ")]
+        //public static string UploadFile(string RootPath, UploadedFile objHtmlInputFile, string NewFileName)
+        //{
+        //    var fileManager = FileManager.Instance;
+        //    var folderManager = FolderManager.Instance;
 
-            var settings = PortalController.Instance.GetCurrentPortalSettings();
-            var portalID = GetFolderPortalID(settings);
+        //    var settings = PortalController.Instance.GetCurrentPortalSettings();
+        //    var portalID = GetFolderPortalID(settings);
 
-            var fileName = objHtmlInputFile.FileName;
+        //    var fileName = objHtmlInputFile.FileName;
 
-            if (NewFileName != Null.NullString)
-            {
-                fileName = NewFileName;
-            }
+        //    if (NewFileName != Null.NullString)
+        //    {
+        //        fileName = NewFileName;
+        //    }
 
-            fileName = Path.GetFileName(fileName);
+        //    fileName = Path.GetFileName(fileName);
 
-            var folderPath = Globals.GetSubFolderPath(RootPath + fileName, portalID);
+        //    var folderPath = Globals.GetSubFolderPath(RootPath + fileName, portalID);
 
-            var folder = folderManager.GetFolder(portalID, folderPath);
+        //    var folder = folderManager.GetFolder(portalID, folderPath);
 
-            return CreateFile(folder, fileName, ((FileManager)fileManager).GetContentType(Path.GetExtension(fileName)), objHtmlInputFile.InputStream, false, true, true);
-        }
+        //    return CreateFile(folder, fileName, ((FileManager)fileManager).GetContentType(Path.GetExtension(fileName)), objHtmlInputFile.InputStream, false, true, true);
+        //}
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("Deprecated in DNN 6.0.")]
