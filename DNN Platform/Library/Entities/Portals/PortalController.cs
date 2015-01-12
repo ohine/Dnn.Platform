@@ -2635,43 +2635,49 @@ namespace DotNetNuke.Entities.Portals
         /// <returns>If the method executed successful, it will return NullString, otherwise return error message.</returns>
         public static string DeletePortal(PortalInfo portal, string serverPath)
         {
-            string message = string.Empty;
+            var message = string.Empty;
+            var strRoot = serverPath + "Portals\\" + portal.PortalID;
+            var folder = FolderManager.Instance.GetFolder(portal.PortalID, string.Empty);
+            var folderMapping = FolderMappingController.Instance.GetFolderMapping(folder.FolderMappingID);
+            var folderProvider = FolderProvider.Instance(folderMapping.FolderProviderType);
 
-            //check if this is the last portal
+            // check if this is the last portal
             int portalCount = Instance.GetPortals().Count;
             if (portalCount > 1)
             {
                 if (portal != null)
                 {
-                    //delete custom resource files
+                    // delete custom resource files
                     Globals.DeleteFilesRecursive(serverPath, ".Portal-" + portal.PortalID + ".resx");
 
-                    //If child portal delete child folder
+                    // If child portal delete child folder
                     var arr = PortalAliasController.Instance.GetPortalAliasesByPortalId(portal.PortalID).ToList();
                     if (arr.Count > 0)
                     {
-                        var portalAliasInfo = (PortalAliasInfo)arr[0];
-                        string portalName = Globals.GetPortalDomainName(portalAliasInfo.HTTPAlias, null, true);
+                        var portalAliasInfo = arr[0];
+                        var portalName = Globals.GetPortalDomainName(portalAliasInfo.HTTPAlias, null, true);
                         if (portalAliasInfo.HTTPAlias.IndexOf("/", StringComparison.Ordinal) > -1)
                         {
                             portalName = GetPortalFolder(portalAliasInfo.HTTPAlias);
                         }
-                        if (!String.IsNullOrEmpty(portalName) && Directory.Exists(serverPath + portalName))
+                        if (!string.IsNullOrEmpty(portalName) && folderProvider.FolderExists(serverPath + portalName, folderMapping))
                         {
-                            DeletePortalFolder(serverPath, portalName);
+                            DeletePortalFolder(serverPath, portalName, portal.PortalID);
                         }
                     }
-                    //delete upload directory
-                    Globals.DeleteFolderRecursive(serverPath + "Portals\\" + portal.PortalID);
+
+                    // delete upload directory
+                    DeleteFolderAndSubFolders(portal.PortalID, folder, folderMapping, folderProvider);
                     if (!string.IsNullOrEmpty(portal.HomeDirectory))
                     {
-                        string HomeDirectory = portal.HomeDirectoryMapPath;
-                        if (Directory.Exists(HomeDirectory))
+                        var homeDirectory = portal.HomeDirectoryMapPath;
+                        if (folderProvider.FolderExists(homeDirectory, folderMapping))
                         {
-                            Globals.DeleteFolderRecursive(HomeDirectory);
+                            DeleteFolderAndSubFolders(portal.PortalID, folder, folderMapping, folderProvider);
                         }
                     }
-                    //remove database references
+
+                    // remove database references
                     DeletePortalInternal(portal.PortalID);
                 }
             }
@@ -2680,6 +2686,21 @@ namespace DotNetNuke.Entities.Portals
                 message = Localization.GetString("LastPortal");
             }
             return message;
+        }
+
+        /// <summary>Deletes the folder and all subfolders.</summary>
+        /// <param name="portalId">The portal identifier.</param>
+        /// <param name="folder">The folder.</param>
+        /// <param name="folderMapping">The folder mapping.</param>
+        /// <param name="folderProvider">The folder provider.</param>
+        private static void DeleteFolderAndSubFolders(int portalId, IFolderInfo folder, FolderMappingInfo folderMapping, FolderProvider folderProvider)
+        {   
+            if (portalId == Null.NullInteger || !folderProvider.FolderExists(folder.FolderPath, folderMapping))
+            {
+                return;
+            }
+
+            folderProvider.DeleteFolder(folder);
         }
 
         /// <summary>
@@ -2699,23 +2720,22 @@ namespace DotNetNuke.Entities.Portals
             return alias.Substring(alias.IndexOf(appPath, StringComparison.InvariantCultureIgnoreCase) + appPath.Length);
         }
 
-        /// <summary>
-        /// Delete the child portal folder and try to remove its parent when parent folder is empty.
-        /// </summary>
+        /// <summary>Delete the child portal folder and try to remove its parent when parent folder is empty.</summary>
         /// <param name="serverPath">the server path.</param>
         /// <param name="portalFolder">the child folder path.</param>
-        /// <returns></returns>
-        public static void DeletePortalFolder(string serverPath, string portalFolder)
+        /// <param name="portalId">The portal identifier.</param>
+        public static void DeletePortalFolder(string serverPath, string portalFolder, int portalId)
         {
             var physicalPath = serverPath + portalFolder;
             Globals.DeleteFolderRecursive(physicalPath);
-            //remove parent folder if its empty.
+
+            // remove parent folder if its empty.
             var parentFolder = Directory.GetParent(physicalPath);
             while (parentFolder != null && !parentFolder.FullName.Equals(serverPath.TrimEnd('\\'), StringComparison.InvariantCultureIgnoreCase))
             {
-                if (parentFolder.GetDirectories().Length + parentFolder.GetFiles().Length == 0)
+                if (Directory.GetDirectories(parentFolder.FullName).Length + Directory.GetFiles(parentFolder.FullName).Length == 0)
                 {
-                    parentFolder.Delete();
+                    Directory.Delete(parentFolder.FullName);
                     parentFolder = parentFolder.Parent;
                 }
                 else
