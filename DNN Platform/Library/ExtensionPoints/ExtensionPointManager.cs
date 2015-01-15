@@ -69,22 +69,14 @@ namespace DotNetNuke.ExtensionPoints
             ComposeParts(this);
         }
 
-        private static CompositionContainer MefCompositionContainer
-        {
-            get
-            {
-                var container = HttpContext.Current.Application["MefCompositionContainer"] as CompositionContainer;                
-                if (container == null)
-                {
-                    var catalog = new AggregateCatalog();
-                    var path = Path.Combine(Globals.ApplicationMapPath, "bin");
-                    catalog.Catalogs.Add(new SafeDirectoryCatalog(path));
-                    container = new CompositionContainer(catalog, true);
-                    HttpContext.Current.Application["MefCompositionContainer"] = container;
-                }
+        private static readonly CompositionContainer MefCompositionContainer = InitializeMefCompositionContainer();
 
-                return container;
-            }
+        private static CompositionContainer InitializeMefCompositionContainer()
+        {
+            var catalog = new AggregateCatalog();
+            var path = Path.Combine(Globals.ApplicationMapPath, "bin");
+            catalog.Catalogs.Add(new SafeDirectoryCatalog(path));
+            return new CompositionContainer(catalog, true);
         }
 
         public static void ComposeParts(params object[] attributeParts)
