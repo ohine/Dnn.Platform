@@ -2647,9 +2647,6 @@ namespace DotNetNuke.Entities.Portals
             {
                 if (portal != null)
                 {
-                    // delete custom resource files
-                    Globals.DeleteFilesRecursive(serverPath, ".Portal-" + portal.PortalID + ".resx");
-
                     // If child portal delete child folder
                     var arr = PortalAliasController.Instance.GetPortalAliasesByPortalId(portal.PortalID).ToList();
                     if (arr.Count > 0)
