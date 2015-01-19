@@ -11,6 +11,8 @@ namespace DotNetNuke.ExtensionPoints
     {
         private void LoadControl(IUserControlExtensionPoint extension)
         {
+            if (extension == null) return;
+
             var control = Page.LoadControl(extension.UserControlSrc);
             control.ID = Path.GetFileNameWithoutExtension(extension.UserControlSrc);
             Controls.Add(control);
