@@ -142,23 +142,23 @@ namespace DotNetNuke.Modules.UrlManagement.Components
 
         protected void DeleteAiasesGrid(object source, CommandEventArgs e)
         {
-            //Get the index of the row to delete
+            // Get the index of the row to delete
             int index = Convert.ToInt32(e.CommandArgument);
 
-            //Remove the alias from the aliases collection
+            // Remove the alias from the aliases collection
             var portalAlias = Aliases[index];
 
             PortalAliasController.Instance.DeletePortalAlias(portalAlias);
-            //should remove the portal's folder if exist
+            // should remove the portal's folder if exist
             var portalFolder = PortalController.GetPortalFolder(portalAlias.HTTPAlias);
             var serverPath = Globals.GetAbsoluteServerPath(Request);
 
             if (!string.IsNullOrEmpty(portalFolder) && Directory.Exists(serverPath + portalFolder))
             {
-                PortalController.DeletePortalFolder(serverPath, portalFolder);
+                PortalController.DeletePortalFolder(serverPath, portalFolder, this.PortalId);
             }
 
-            //Rebind the collection
+            // Rebind the collection
             _Aliases = null;
             BindAliases();
 
