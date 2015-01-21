@@ -158,7 +158,7 @@ namespace DotNetNuke.Modules.UrlManagement.Components
                 PortalController.DeletePortalFolder(serverPath, portalFolder, this.PortalId);
             }
 
-            // Rebind the collection
+            //Rebind the collection
             _Aliases = null;
             BindAliases();
 
