@@ -155,7 +155,7 @@ namespace DotNetNuke.Modules.UrlManagement.Components
 
             if (!string.IsNullOrEmpty(portalFolder) && Directory.Exists(serverPath + portalFolder))
             {
-                PortalController.DeletePortalFolder(serverPath, portalFolder, this.PortalId);
+                PortalController.DeletePortalFolder(serverPath, portalFolder);
             }
 
             //Rebind the collection

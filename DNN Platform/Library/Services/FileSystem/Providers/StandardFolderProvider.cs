@@ -114,9 +114,6 @@ namespace DotNetNuke.Services.FileSystem
 
         public override void DeleteFolder(IFolderInfo folder)
         {
-            Requires.NotNull("folder", folder);
-
-            Globals.DeleteFolderRecursive(folder.PhysicalPath);
         }
 
         public override bool FileExists(IFolderInfo folder, string fileName)
