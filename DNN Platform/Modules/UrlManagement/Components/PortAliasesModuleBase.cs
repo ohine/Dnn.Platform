@@ -77,7 +77,7 @@ namespace DotNetNuke.Modules.UrlManagement.Components
 
         protected int CurrentPortalId
         {
-            get { return _currentPortalId;  }
+            get { return _currentPortalId; }
         }
 
         protected abstract Label ErrorLabel { get; }
@@ -142,14 +142,14 @@ namespace DotNetNuke.Modules.UrlManagement.Components
 
         protected void DeleteAiasesGrid(object source, CommandEventArgs e)
         {
-            //Get the index of the row to delete
+            // Get the index of the row to delete
             int index = Convert.ToInt32(e.CommandArgument);
 
-            //Remove the alias from the aliases collection
+            // Remove the alias from the aliases collection
             var portalAlias = Aliases[index];
 
             PortalAliasController.Instance.DeletePortalAlias(portalAlias);
-            //should remove the portal's folder if exist
+            // should remove the portal's folder if exist
             var portalFolder = PortalController.GetPortalFolder(portalAlias.HTTPAlias);
             var serverPath = Globals.GetAbsoluteServerPath(Request);
 
@@ -203,7 +203,7 @@ namespace DotNetNuke.Modules.UrlManagement.Components
                 if (portalAlias != null)
                 {
                     Control imgColumnControl = item.Controls[ActionColumnIndex].FindControl("deleteButton");
-                    var delImage = (DnnImageButton) imgColumnControl;
+                    var delImage = (DnnImageButton)imgColumnControl;
                     if (delImage != null)
                     {
                         delImage.Visible = (portalAlias.PortalAliasID != PortalAlias.PortalAliasID && !portalAlias.IsPrimary && !isEditItem);
@@ -212,14 +212,14 @@ namespace DotNetNuke.Modules.UrlManagement.Components
                     }
 
                     imgColumnControl = item.Controls[ActionColumnIndex].FindControl("editButton");
-                    var editImage = (DnnImageButton) imgColumnControl;
+                    var editImage = (DnnImageButton)imgColumnControl;
                     if (editImage != null)
                     {
                         editImage.Visible = (portalAlias.PortalAliasID != PortalAlias.PortalAliasID && !isEditItem);
                     }
 
                     imgColumnControl = item.Controls[ActionColumnIndex].FindControl("currentAliasHelpLabel");
-                    var image = (LabelControl) imgColumnControl;
+                    var image = (LabelControl)imgColumnControl;
                     if (image != null)
                     {
                         image.Visible = (portalAlias.PortalAliasID == PortalAlias.PortalAliasID && !isEditItem);
@@ -230,7 +230,7 @@ namespace DotNetNuke.Modules.UrlManagement.Components
                         var cultureCodeDropDown = item.Controls[2].FindControl("cultureCodeDropDown") as DnnComboBox;
                         if (cultureCodeDropDown != null)
                         {
-                            var locales = new Dictionary<string, string> {{"<" + LocalizeString("None_Specified") + ">", String.Empty}};
+                            var locales = new Dictionary<string, string> { { "<" + LocalizeString("None_Specified") + ">", String.Empty } };
                             foreach (var locale in Locales)
                             {
                                 locales.Add(locale.Value.NativeName, locale.Value.Code);

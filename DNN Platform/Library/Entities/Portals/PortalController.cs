@@ -2699,12 +2699,10 @@ namespace DotNetNuke.Entities.Portals
             return alias.Substring(alias.IndexOf(appPath, StringComparison.InvariantCultureIgnoreCase) + appPath.Length);
         }
 
-        /// <summary>
-        /// Delete the child portal folder and try to remove its parent when parent folder is empty.
-        /// </summary>
+        /// <summary>Delete the child portal folder and try to remove its parent when parent folder is empty.</summary>
         /// <param name="serverPath">the server path.</param>
         /// <param name="portalFolder">the child folder path.</param>
-        /// <returns></returns>
+        /// <param name="portalId">The portal identifier.</param>
         public static void DeletePortalFolder(string serverPath, string portalFolder)
         {
             var physicalPath = serverPath + portalFolder;
