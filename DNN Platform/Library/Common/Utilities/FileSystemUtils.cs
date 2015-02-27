@@ -47,9 +47,6 @@ using ICSharpCode.SharpZipLib.Zip;
 using Telerik.Web.UI;
 
 using FileInfo = DotNetNuke.Services.FileSystem.FileInfo;
-using Directory = Pri.LongPath.Directory;
-using File = Pri.LongPath.File;
-using DirectoryInfo = Pri.LongPath.DirectoryInfo;
 
 #endregion
 
