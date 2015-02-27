@@ -61,7 +61,7 @@ namespace DotNetNuke.Tests.Urls
 
         private void CreateSimulatedRequest(Uri url)
         {
-            var simulator = new Instance.Utilities.HttpSimulator.HttpSimulator();
+            var simulator = new Instance.Utilities.HttpSimulator.HttpSimulator("/", WebsitePhysicalAppPath);
             simulator.SimulateRequest(url);
 
             var browserCaps = new HttpBrowserCapabilities { Capabilities = new Hashtable() };
@@ -578,7 +578,7 @@ namespace DotNetNuke.Tests.Urls
             if (!String.IsNullOrEmpty(language))
             {
                 _customLocale = new Locale { Code = language, Fallback = "en-US" };
-                _customLocale.Text = CultureInfo.CreateSpecificCulture(_customLocale.Code).NativeName;
+                _customLocale.Text = CultureInfo.GetCultureInfo(_customLocale.Code).NativeName;
                 Localization.SaveLanguage(_customLocale);
                 Localization.AddLanguageToPortals(_customLocale.LanguageId);
 

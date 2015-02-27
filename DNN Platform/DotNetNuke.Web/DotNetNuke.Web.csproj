@@ -37,6 +37,8 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\Evoq.Content\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -68,10 +70,6 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="DotNetNuke.WebUtility">
-      <HintPath>..\Controls\DotNetNuke.WebUtility\bin\DotNetNuke.WebUtility.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\Packages\Newtonsoft.Json.4.5.7\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -160,10 +158,12 @@
     <Compile Include="Components\LocalizationHelper.cs" />
     <Compile Include="InternalServices\ControlBarController.cs" />
     <Compile Include="InternalServices\ContentWorkflowServiceController.cs" />
+    <Compile Include="InternalServices\CountryRegionController.cs" />
     <Compile Include="InternalServices\EventLogServiceController.cs" />
     <Compile Include="InternalServices\LanguageServiceController.cs" />
     <Compile Include="InternalServices\GettingStartedController.cs" />
     <Compile Include="InternalServices\ImageHeader.cs" />
+    <Compile Include="InternalServices\NotificationDTO.cs" />
     <Compile Include="InternalServices\PageServiceController.cs" />
     <Compile Include="InternalServices\ItemListServiceController.cs" />
     <Compile Include="InternalServices\SearchServiceController.cs" />
@@ -174,6 +174,7 @@
     <Compile Include="InternalServices\RelationshipServiceController.cs" />
     <Compile Include="InternalServices\MessagingServiceController.cs" />
     <Compile Include="InternalServices\ServiceRouteMapper.cs" />
+    <Compile Include="InternalServices\NewUserNotificationServiceController.cs" />
     <Compile Include="InternalServices\UserFileController.cs" />
     <Compile Include="InternalServices\Views\Search\GroupedDetailView.cs" />
     <Compile Include="InternalServices\Views\Search\GroupedBasicView.cs" />
@@ -448,6 +449,10 @@
       <Project>{537b45eb-2ec3-4849-bc6b-d761f43674a5}</Project>
       <Name>DotNetNuke.Web.Client</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DotNetNuke.WebUtility\DotNetNuke.WebUtility.vbproj">
+      <Project>{4912f062-f8a8-4f9d-8f8e-244ebee1acbd}</Project>
+      <Name>DotNetNuke.WebUtility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HttpModules\DotNetNuke.HttpModules.csproj">
       <Project>{3d9c3f5f-1d2d-4d89-995b-438055a5e3a6}</Project>
       <Name>DotNetNuke.HttpModules</Name>
@@ -528,4 +533,11 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="Library.build" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
 </Project>

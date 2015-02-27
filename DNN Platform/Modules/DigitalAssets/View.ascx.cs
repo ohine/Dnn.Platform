@@ -138,7 +138,13 @@ namespace DotNetNuke.Modules.DigitalAssets
         {
             get
             {
-                return Globals.NavigateURL(TabId, "ControlKey", "mid=" + ModuleId, "popUp=true", "ReturnUrl=" + Server.UrlEncode(Globals.NavigateURL()));
+                var url = Globals.NavigateURL(TabId, "ControlKey", "mid=" + ModuleId, "ReturnUrl=" + Server.UrlEncode(Globals.NavigateURL()));
+
+                //append popUp parameter
+                var delimiter = url.Contains("?") ? "&" : "?";
+                url = string.Format("{0}{1}popUp=true", url, delimiter);
+
+                return url;
             }
         }
 
@@ -348,6 +354,13 @@ namespace DotNetNuke.Modules.DigitalAssets
                     },
                 new DnnMenuItem
                     {
+                        Text = Localization.GetString("UnlinkFolder", LocalResourceFile),
+                        Value = "UnlinkFolder",
+                        CssClass = "permission_DELETE",
+                        ImageUrl = IconController.IconURL("UnLink", "16x16", "Black")
+                    },
+                new DnnMenuItem
+                    {
                         Text = Localization.GetString("ViewFolderProperties", LocalResourceFile),
                         Value = "Properties",
                         CssClass = "permission_READ",
@@ -419,10 +432,10 @@ namespace DotNetNuke.Modules.DigitalAssets
                     }, 
                 new DnnMenuItem
                     {
-                        Text = Localization.GetString("GetUrl", LocalResourceFile),
-                        Value = "GetUrl",
-                        CssClass = "permission_READ singleItem onlyFiles",
-                        ImageUrl = IconController.IconURL("FileLink", "16x16", "Black")
+                        Text = Localization.GetString("Unlink", LocalResourceFile),
+                        Value = "Unlink",
+                        CssClass = "permission_DELETE singleItem onlyFolders",
+                        ImageUrl = IconController.IconURL("UnLink", "16x16", "Black")
                     }, 
                 new DnnMenuItem
                     {
@@ -437,7 +450,14 @@ namespace DotNetNuke.Modules.DigitalAssets
                         Value = "Properties",
                         CssClass = "permission_READ singleItem",
                         ImageUrl = IconController.IconURL("ViewProperties", "16x16", "CtxtMn")
-                    },                        
+                    }, 
+                new DnnMenuItem
+                    {
+                        Text = Localization.GetString("GetUrl", LocalResourceFile),
+                        Value = "GetUrl",
+                        CssClass = "permission_READ singleItem onlyFiles",
+                        ImageUrl = IconController.IconURL("FileLink", "16x16", "Black")
+                    }
                 });
 
             // Dnn Menu Item Extension Point

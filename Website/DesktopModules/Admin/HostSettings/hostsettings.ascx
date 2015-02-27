@@ -141,6 +141,16 @@
                         runat="server" />
                     <asp:CheckBox ID="chkUseCustomModuleCssClass" runat="server" />
                 </div>
+                <div class="dnnFormItem">
+                    <dnn:label id="plUpgradeForceSSL" controlname="chkUseCustomModuleCssClass"
+                        runat="server" />
+                    <asp:CheckBox ID="chkUpgradeForceSSL" runat="server" />
+                </div>
+                <div id="sslDomainRow" class="dnnFormItem">
+                    <dnn:label id="plSSLDomain" controlname="chkUseCustomModuleCssClass"
+                        runat="server" />
+                    <asp:TextBox ID="txtSSLDomain" runat="server" MaxLength="256" />
+                </div>
                 <div id="hostSkinSettings">
                     <div class="dnnFormItem">
                         <dnn:label id="plHostSkin" controlname="hostSkinCombo" runat="server" />
@@ -561,6 +571,7 @@
                     <dnn:label id="plSiteLogBuffer" controlname="txtSiteLogBuffer" runat="server" />
                     <asp:TextBox ID="txtSiteLogBuffer" runat="server" MaxLength="4" />
                     <asp:Label ID="lblSiteLogBuffer" runat="server" resourcekey="Items" />
+                    <asp:RangeValidator runat="server" id="valSiteLogBuffer" Type="Integer" controltovalidate="txtSiteLogBuffer" validationexpression="^\d*" MinimumValue="1" MaximumValue="999" CssClass="dnnFormMessage dnnFormError" Display="Dynamic" resourcekey="SiteLogBufferValidation"  />
                 </div>
                 <div class="dnnFormItem">
                     <dnn:label id="plSiteLogHistory" controlname="txtSiteLogHistory" runat="server" />
@@ -722,6 +733,11 @@
             toggleSection('requestFiltersRow', $("#<%=chkEnableRequestFilters.ClientID %>")[0].checked);
             $("#<%=chkEnableRequestFilters.ClientID %>").change(function (e) {
                 toggleSection('requestFiltersRow', this.checked);
+            });
+
+            toggleSection('sslDomainRow', $("#<%=chkUpgradeForceSSL.ClientID %>")[0].checked);
+            $("#<%=chkUpgradeForceSSL.ClientID %>").change(function (e) {
+                toggleSection('sslDomainRow', this.checked);
             });
 
             $("#<%=chkTelerikCdn.ClientID %>").change(function (e) {
