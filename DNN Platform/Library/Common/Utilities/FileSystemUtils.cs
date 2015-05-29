@@ -47,9 +47,9 @@ using ICSharpCode.SharpZipLib.Zip;
 using Telerik.Web.UI;
 
 using FileInfo = DotNetNuke.Services.FileSystem.FileInfo;
-using Directory = Pri.LongPath.Directory;
-using File = Pri.LongPath.File;
-using DirectoryInfo = Pri.LongPath.DirectoryInfo;
+using Directory = SchwabenCode.QuickIO.QuickIODirectory;
+using File = SchwabenCode.QuickIO.QuickIOFile;
+using DirectoryInfo = SchwabenCode.QuickIO.QuickIODirectoryInfo;
 
 #endregion
 
@@ -737,6 +737,9 @@ namespace DotNetNuke.Common.Utilities
         {
             if (File.Exists(fileName))
             {
+                // Not sure why delete is throwing an exception if we don't do this?
+                fileName = fileName.Replace('/', '\\');
+                Logger.Info(fileName);
                 File.SetAttributes(fileName, FileAttributes.Normal);
                 File.Delete(fileName);
             }
@@ -1354,7 +1357,7 @@ namespace DotNetNuke.Common.Utilities
                     RelativeDir = Path.GetDirectoryName(objZipEntry.Name);
                     if ((RelativeDir != string.Empty) && (!Directory.Exists(Path.Combine(destPath, RelativeDir))))
                     {
-                        Directory.CreateDirectory(Path.Combine(destPath, RelativeDir));
+                        Directory.Create(Path.Combine(destPath, RelativeDir));
                     }
                     if ((!objZipEntry.IsDirectory) && (!String.IsNullOrEmpty(LocalFileName)))
                     {
@@ -1369,7 +1372,8 @@ namespace DotNetNuke.Common.Utilities
                             FileStream objFileStream = null;
                             try
                             {
-                                objFileStream = File.Create(FileNamePath);
+                                File.Create(FileNamePath);
+                                objFileStream = File.Open(FileNamePath);
                                 int intSize = 2048;
                                 var arrData = new byte[2048];
                                 intSize = zipStream.Read(arrData, 0, arrData.Length);
@@ -1560,7 +1564,7 @@ namespace DotNetNuke.Common.Utilities
             {
                 if (Directory.Exists(strRoot))
                 {
-                    foreach (string strFolder in Directory.GetDirectories(strRoot))
+                    foreach (string strFolder in Directory.EnumerateDirectoryPaths(strRoot))
                     {
                         var directory = new DirectoryInfo(strFolder);
                         if ((directory.Attributes & FileAttributes.Hidden) == 0 && (directory.Attributes & FileAttributes.System) == 0)
@@ -1568,7 +1572,7 @@ namespace DotNetNuke.Common.Utilities
                             DeleteFilesRecursive(strFolder, filter);
                         }
                     }
-                    foreach (string strFile in Directory.GetFiles(strRoot, "*" + filter))
+                    foreach (string strFile in Directory.EnumerateFilePaths(new DirectoryInfo(strRoot)).Where(f => f.Contains(filter)))
                     {
                         try
                         {
@@ -1585,34 +1589,36 @@ namespace DotNetNuke.Common.Utilities
 
         public static void DeleteFolderRecursive(string strRoot)
         {
-            if (!String.IsNullOrEmpty(strRoot))
+            if (String.IsNullOrEmpty(strRoot) || !Directory.Exists(strRoot.Trim()))
             {
-                if (Directory.Exists(strRoot))
+                Logger.Info(strRoot + " does not exist. ");
+                return;
+            }
+
+            foreach (string strFolder in Directory.EnumerateDirectoryPaths(strRoot))
+            {
+                DeleteFolderRecursive(strFolder);
+            }
+            foreach (string strFile in Directory.EnumerateFilePaths(new DirectoryInfo(strRoot)))
+            {
+                try
                 {
-                    foreach (string strFolder in Directory.GetDirectories(strRoot))
-                    {
-                        DeleteFolderRecursive(strFolder);
-                    }
-                    foreach (string strFile in Directory.GetFiles(strRoot))
-                    {
-                        try
-                        {
-                            DeleteFile(strFile);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex);
-                        }
-                    }
-                    try
-                    {
-                        Directory.Delete(strRoot);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error(ex);
-                    }
+                    DeleteFile(strFile);
                 }
+                catch (Exception ex)
+                {
+                    Logger.Info(strRoot + " does not exist. 1");
+                    Logger.Error(ex);
+                }
+            }
+            try
+            {
+                Directory.Delete(strRoot);
+            }
+            catch (Exception ex)
+            {
+                Logger.Info(strRoot + " does not exist. 2");
+                Logger.Error(ex);
             }
         }
 
