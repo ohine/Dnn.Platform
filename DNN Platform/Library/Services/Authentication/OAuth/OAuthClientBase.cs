@@ -33,20 +33,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.Entities.Users;
 using DotNetNuke.Security.Membership;
-
-using System.Collections.Specialized;
-
+using DotNetNuke.Instrumentation;
 using DotNetNuke.Entities.Portals;
 
 namespace DotNetNuke.Services.Authentication.OAuth
@@ -56,7 +54,7 @@ namespace DotNetNuke.Services.Authentication.OAuth
     public abstract class OAuthClientBase
     {
         #region Private Members
-
+        private static readonly ILog Logger = LoggerSource.Instance.GetLogger(typeof(OAuthClientBase));
         private const string HMACSHA1SignatureType = "HMAC-SHA1";
 
         //oAuth 1
@@ -236,7 +234,7 @@ namespace DotNetNuke.Services.Authentication.OAuth
 
             ExchangeCodeForToken();
 
-            return AuthorisationResult.Authorized;
+            return String.IsNullOrEmpty(AuthToken) ? AuthorisationResult.Denied : AuthorisationResult.Authorized;
         }
 
         private string ComputeHash(HashAlgorithm hashAlgorithm, string data)
@@ -373,15 +371,31 @@ namespace DotNetNuke.Services.Authentication.OAuth
                 request.Headers.Add(HttpRequestHeader.Authorization, authHeader);
             }
 
-            using (WebResponse response = request.GetResponse())
+            try
             {
-                using (Stream responseStream = response.GetResponseStream())
+                using (WebResponse response = request.GetResponse())
+                {
+                    using (Stream responseStream = response.GetResponseStream())
+                    {
+                        if (responseStream != null)
+                        {
+                            using (var responseReader = new StreamReader(responseStream))
+                            {
+                                return responseReader.ReadToEnd();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                using (Stream responseStream = ex.Response.GetResponseStream())
                 {
                     if (responseStream != null)
                     {
                         using (var responseReader = new StreamReader(responseStream))
                         {
-                            return responseReader.ReadToEnd();
+                            Logger.ErrorFormat("WebResponse exception: {0}", responseReader.ReadToEnd());
                         }
                     }
                 }
@@ -515,7 +529,7 @@ namespace DotNetNuke.Services.Authentication.OAuth
 
         private void SaveTokenCookie(string suffix)
         {
-            var authTokenCookie = new HttpCookie(AuthTokenName + suffix);
+            var authTokenCookie = new HttpCookie(AuthTokenName + suffix) { Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/") };
             authTokenCookie.Values[OAuthTokenKey] = AuthToken;
             authTokenCookie.Values[OAuthTokenSecretKey] = TokenSecret;
             authTokenCookie.Values[UserGuidKey] = UserGuid;
@@ -746,7 +760,11 @@ namespace DotNetNuke.Services.Authentication.OAuth
 
         public void RemoveToken()
         {
-            var authTokenCookie = new HttpCookie(AuthTokenName) {Expires = DateTime.Now.AddDays(-30)};
+            var authTokenCookie = new HttpCookie(AuthTokenName)
+            {
+                Expires = DateTime.Now.AddDays(-30),
+                Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/")
+            };
             HttpContext.Current.Response.SetCookie(authTokenCookie);
         }
 

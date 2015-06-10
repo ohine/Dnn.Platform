@@ -143,7 +143,6 @@ namespace DotNetNuke.Services.Installer.Packages
         {
             provider.UpdatePackage(package.PackageID,
                                    package.PortalID,
-                                   package.Name,
                                    package.FriendlyName,
                                    package.Description,
                                    package.PackageType,
@@ -250,6 +249,10 @@ namespace DotNetNuke.Services.Installer.Packages
             return GetExtensionPackages(portalId).Where(predicate).ToList();
         }
 
+        /// <summary>
+        /// Save or update the package
+        /// </summary>
+        /// <param name="package"></param> 
         public void SaveExtensionPackage(PackageInfo package)
         {
             if (package.PackageID == Null.NullInteger)

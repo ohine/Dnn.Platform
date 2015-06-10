@@ -1,0 +1,107 @@
+{"progress":0,"details":"Folder Creation Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":1,"details":"File Creation Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":3,"details":"File Deletion Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":5,"details":"Folder Deletion Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":9,"details":"Checking IIS configuration","check0":"Done","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Installing Database Script DotNetNuke.Schema","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Installing Database Script DotNetNuke.Data","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Installing Membership Database Scripts","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.00.01","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.00.02","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.00.03","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.00.04","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.00.05","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.00.06","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.01.00","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.01.01","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.01.02","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.02.00","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":18,"details":"Applying Upgrade Script 07.02.01","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Applying Upgrade Script 07.02.02","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Applying Upgrade Script 07.03.00","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Applying Upgrade Script 07.03.01","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Upgrading Application to 7.0.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Upgrading Application to 7.0.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Upgrading Application to 7.0.3","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Upgrading Application to 7.0.4","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Upgrading Application to 7.0.5","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":19,"details":"Upgrading Application to 7.0.6","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Upgrading Application to 7.1.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Upgrading Application to 7.1.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Upgrading Application to 7.1.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Upgrading Application to 7.2.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Upgrading Application to 7.2.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Upgrading Application to 7.2.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Upgrading Application to 7.3.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Upgrading Application to 7.3.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":20,"details":"Updating Config for 7.0.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.0.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.0.3","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.0.4","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.0.5","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.0.6","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.1.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.1.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.1.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.2.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.2.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":21,"details":"Updating Config for 7.2.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Updating Config for 7.3.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Updating Config for 7.3.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Deleting Older Files for 7.0.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Deleting Older Files for 7.0.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Deleting Older Files for 7.0.3","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Deleting Older Files for 7.0.4","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Deleting Older Files for 7.0.5","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Deleting Older Files for 7.0.6","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":22,"details":"Deleting Older Files for 7.1.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Deleting Older Files for 7.1.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Deleting Older Files for 7.1.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Deleting Older Files for 7.2.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Deleting Older Files for 7.2.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Deleting Older Files for 7.2.2","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Deleting Older Files for 7.3.0","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Deleting Older Files for 7.3.1","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Upgrading Application","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":27,"details":"Installing Module - DDRMenu_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":27,"details":"ERROR:Could not load file or assembly \u0027Pri.LongPath, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null\u0027 or one of its dependencies. The system cannot find the file specified.","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":0,"details":"Folder Creation Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":1,"details":"File Creation Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":3,"details":"File Deletion Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":5,"details":"Folder Deletion Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":9,"details":"Checking IIS configuration","check0":"Done","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Upgrading Application","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":27,"details":"Installing Module - DDRMenu_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":27,"details":"ERROR:Could not load file or assembly \u0027Pri.LongPath, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null\u0027 or one of its dependencies. The system cannot find the file specified.","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":0,"details":"Folder Creation Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":1,"details":"File Creation Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":3,"details":"File Deletion Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":5,"details":"Folder Deletion Check","check0":"Running","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":9,"details":"Checking IIS configuration","check0":"Done","check1":"NotStarted","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":23,"details":"Upgrading Application","check0":"Done","check1":"Running","check2":"NotStarted","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":27,"details":"Installing Module - DDRMenu_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":27,"details":"Installing Module - DNNCE_CoreMessaging_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":27,"details":"Installing Module - DNNCE_DigitalAssetsManagement_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":27,"details":"Installing Module - DNNCE_HTML_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":28,"details":"Installing Module - DNNCE_Journal_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":28,"details":"Installing Module - DNNCE_MemberDirectory_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":28,"details":"Installing Module - DNNCE_MobileManagement_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":29,"details":"Installing Module - DNNCE_PreviewProfileManagement_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":29,"details":"Installing Module - DNNCE_RazorHost_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":29,"details":"Installing Module - DNNCE_SocialGroups_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":30,"details":"Installing Module - DNNCE_Taxonomy_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":30,"details":"Installing Library - DNNCE_UrlManagement_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":31,"details":"Installing Library - Telerik_07.03.00_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":31,"details":"Installing JavaScript_Library - jQuery.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":31,"details":"Installing JavaScript_Library - Knockout.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":32,"details":"Installing Provider - DNNMenuNavigationProvider_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":32,"details":"Installing Provider - FiftyOneClientCapabilityProvider_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":32,"details":"Installing Provider - RadEditorProvider_07.03.01_Install.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":33,"details":"Installing JavaScript_Library - jQueryMigrate.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":33,"details":"Installing JavaScript_Library - jQueryUI.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":33,"details":"Installing JavaScript_Library - KnockoutMapping.zip","check0":"Done","check1":"Done","check2":"Running","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":36,"details":"Initializing Host Settings","check0":"Done","check1":"Done","check2":"Done","check3":"NotStarted","check4":"NotStarted","check5":"NotStarted"}
+{"progress":54,"details":"Creating Site [My Website]","check0":"Done","check1":"Done","check2":"Done","check3":"Running","check4":"NotStarted","check5":"NotStarted"}
+{"progress":63,"details":"Create SuperUser","check0":"Done","check1":"Done","check2":"Done","check3":"Done","check4":"Running","check5":"NotStarted"}
+{"progress":63,"details":"Creating SuperUserhost","check0":"Done","check1":"Done","check2":"Done","check3":"Done","check4":"Running","check5":"NotStarted"}
+{"progress":100,"details":"Done","check0":"Done","check1":"Done","check2":"Done","check3":"Done","check4":"Done","check5":"NotStarted"}

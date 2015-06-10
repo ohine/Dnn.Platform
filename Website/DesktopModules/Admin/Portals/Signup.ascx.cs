@@ -552,7 +552,7 @@ namespace DotNetNuke.Modules.Admin.Portals
         {
             try
             {
-				txtPortalAlias.Text = optType.SelectedValue == "C" ? Globals.GetDomainName(Request) + @"/" : "";
+                txtPortalAlias.Text = optType.SelectedValue == "C" ? Globals.GetDomainName(Request) + @"/" : "";
             }
             catch (Exception exc) //Module failed to load
             {

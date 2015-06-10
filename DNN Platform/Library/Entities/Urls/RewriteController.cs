@@ -240,7 +240,8 @@ namespace DotNetNuke.Entities.Urls
                                     !HttpContext.Current.Request.Cookies.AllKeys.Contains("SplashPageView"))
                                 {
                                     tabId = portal.SplashTabId;
-                                    HttpContext.Current.Response.Cookies.Add(new HttpCookie("SplashPageView", "true"));
+                                    HttpContext.Current.Response.Cookies.Add(
+                                        new HttpCookie("SplashPageView", "true") { Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/") });
                                     result.Action = ActionType.Redirect302;
                                     result.Reason = RedirectReason.Requested_SplashPage;
                                 }
@@ -424,7 +425,7 @@ namespace DotNetNuke.Entities.Urls
             return found;
         }
 
-        private static string CheckLanguageMatch(ref string url, UrlAction result)
+        internal static string CheckLanguageMatch(ref string url, UrlAction result)
         {
             //ok now scan for the language modifier 
             Match langMatch = Regex.Match(url, "/language/(?<code>.[^/]+)(?:/|$)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);

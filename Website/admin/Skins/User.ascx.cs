@@ -33,6 +33,7 @@ using DotNetNuke.Entities.Tabs;
 using DotNetNuke.Entities.Users;
 using DotNetNuke.Services.Authentication;
 using DotNetNuke.Services.Exceptions;
+using DotNetNuke.Services.FileSystem;
 using DotNetNuke.Services.Localization;
 using DotNetNuke.Services.Social.Notifications;
 using DotNetNuke.Services.Social.Messaging.Internal;
@@ -188,7 +189,7 @@ namespace DotNetNuke.UI.Skins.Controls
 
                         if (ShowAvatar)
                         {
-                            avatar.ImageUrl = string.Format(Globals.UserProfilePicRelativeUrl(), userInfo.UserID, 32, 32);
+                            avatar.ImageUrl = GetAvatarUrl(userInfo);
                             avatar.NavigateUrl = enhancedRegisterLink.NavigateUrl;
                             avatar.ToolTip = Localization.GetString("ProfileAvatar", Localization.GetResourceFile(this, MyFileName));
                             avatarGroup.Visible = true;                            
@@ -206,9 +207,30 @@ namespace DotNetNuke.UI.Skins.Controls
             }
         }
 
+        private string GetAvatarUrl(UserInfo userInfo)
+        {
+            var url = string.Format(Globals.UserProfilePicRelativeUrl(false), userInfo.UserID, 32, 32);
+            if (userInfo.Profile != null)
+            {
+                var photoProperty = userInfo.Profile.GetProperty("Photo");
+
+                int photoFileId;
+                if (photoProperty != null && int.TryParse(photoProperty.PropertyValue, out photoFileId))
+                {
+                    var photoFile = FileManager.Instance.GetFile(photoFileId);
+                    if (photoFile != null)
+                    {
+                        return url + "&cdv="+photoFile.LastModificationTime.Ticks;
+                    }
+                }
+            }
+
+            return url;
+        }
+
         private int GetMessageTab()
         {
-            var cacheKey = string.Format("MessageCenterTab:{0}", PortalSettings.PortalId);
+            var cacheKey = string.Format("MessageCenterTab:{0}:{1}", PortalSettings.PortalId, PortalSettings.CultureCode);
             var messageTabId = DataCache.GetCache<int>(cacheKey);
             if (messageTabId > 0)
                 return messageTabId;

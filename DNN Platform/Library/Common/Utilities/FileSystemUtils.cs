@@ -1353,6 +1353,7 @@ namespace DotNetNuke.Common.Utilities
                 objZipEntry = zipStream.GetNextEntry();
                 while (objZipEntry != null)
                 {
+                    HtmlUtils.WriteKeepAlive();
                     LocalFileName = objZipEntry.Name;
                     RelativeDir = Path.GetDirectoryName(objZipEntry.Name);
                     if ((RelativeDir != string.Empty) && (!Directory.Exists(Path.Combine(destPath, RelativeDir))))
@@ -1590,37 +1591,37 @@ namespace DotNetNuke.Common.Utilities
         public static void DeleteFolderRecursive(string strRoot)
         {
             if (String.IsNullOrEmpty(strRoot) || !Directory.Exists(strRoot.Trim()))
-            {
+                {
                 Logger.Info(strRoot + " does not exist. ");
                 return;
             }
 
             foreach (string strFolder in Directory.EnumerateDirectoryPaths(strRoot))
-            {
-                DeleteFolderRecursive(strFolder);
-            }
+                    {
+                        DeleteFolderRecursive(strFolder);
+                    }
             foreach (string strFile in Directory.EnumerateFilePaths(new DirectoryInfo(strRoot)))
-            {
-                try
-                {
-                    DeleteFile(strFile);
-                }
-                catch (Exception ex)
-                {
+                    {
+                        try
+                        {
+                            DeleteFile(strFile);
+                        }
+                        catch (Exception ex)
+                        {
                     Logger.Info(strRoot + " does not exist. 1");
-                    Logger.Error(ex);
-                }
-            }
-            try
-            {
-                Directory.Delete(strRoot);
-            }
-            catch (Exception ex)
-            {
+                            Logger.Error(ex);
+                        }
+                    }
+                    try
+                    {
+                        Directory.Delete(strRoot);
+                    }
+                    catch (Exception ex)
+                    {
                 Logger.Info(strRoot + " does not exist. 2");
-                Logger.Error(ex);
-            }
-        }
+                        Logger.Error(ex);
+                    }
+                }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("Deprecated in DNN 6.0.")]

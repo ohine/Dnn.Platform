@@ -30,13 +30,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Web;
-using System.Web.Hosting;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml;
-using System.Xml.XPath;
-
-using DotNetNuke.Collections.Internal;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.Data;
@@ -46,7 +42,6 @@ using DotNetNuke.Entities.Tabs;
 using DotNetNuke.Entities.Users;
 using DotNetNuke.Instrumentation;
 using DotNetNuke.Security.Roles;
-using DotNetNuke.Security.Roles.Internal;
 using DotNetNuke.Services.Cache;
 using DotNetNuke.Services.Localization.Internal;
 using DotNetNuke.Services.Log.EventLog;
@@ -813,7 +808,7 @@ namespace DotNetNuke.Services.Localization
             string name;
 
             // Create a CultureInfo class based on culture
-            CultureInfo info = CultureInfo.CreateSpecificCulture(code);
+            CultureInfo info = CultureInfo.GetCultureInfo(code);
 
             // Based on the display type desired by the user, select the correct property
             switch (displayType)
@@ -1896,7 +1891,7 @@ namespace DotNetNuke.Services.Localization
                         // check to see if this is the last extra language being added to the portal
                         var lastLanguage = LocaleController.Instance.GetLocales(portalID).Count == 2;
 
-                        var portalAliases = PortalAliasController.Instance.GetPortalAliasesByPortalId(portalID);
+                        var portalAliases = PortalAliasController.Instance.GetPortalAliasesByPortalId(portalID).ToList();
                         foreach (var portalAliasInfo in portalAliases)
                         {
                             if (portalAliasInfo.CultureCode == language.Code)
@@ -1907,6 +1902,17 @@ namespace DotNetNuke.Services.Localization
                             if (lastLanguage && portalAliasInfo.CultureCode == portalInfo.DefaultLanguage)
                             {
                                 PortalAliasController.Instance.DeletePortalAlias(portalAliasInfo);
+
+                                //Fix PortalSettings for the rest of this request
+                                var newDefaultAlias = portalAliases.SingleOrDefault(a => a.IsPrimary && a.CultureCode == String.Empty);
+                                if (newDefaultAlias != null)
+                                {
+                                    var settings = PortalController.Instance.GetCurrentPortalSettings();
+                                    if (settings != null)
+                                    {
+                                        settings.PortalAlias = newDefaultAlias;
+                                    }
+                                }
                             }
                         }
                     }
@@ -1974,7 +1980,7 @@ namespace DotNetNuke.Services.Localization
         {
             try
             {
-                HttpResponse response = HttpContext.Current.Response;
+                var response = HttpContext.Current == null ? null : HttpContext.Current.Response;
                 if (response == null)
                 {
                     return;
@@ -1986,7 +1992,7 @@ namespace DotNetNuke.Services.Localization
                 {
                     if (!String.IsNullOrEmpty(value))
                     {
-                        cookie = new HttpCookie("language", value);
+                        cookie = new HttpCookie("language", value) { Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/") };
                         response.Cookies.Add(cookie);
                     }
                 }
@@ -2024,6 +2030,9 @@ namespace DotNetNuke.Services.Localization
             {
                 throw new ArgumentNullException("cultureInfo");
             }
+
+            if (cultureInfo.Name == "fa-IR")
+                cultureInfo = Persian.PersianController.GetPersianCultureInfo();
 
             Thread.CurrentThread.CurrentCulture = cultureInfo;
 
