@@ -30,7 +30,7 @@ using DotNetNuke.UI.Utilities;
 
 #endregion
 
-namespace DotNetNuke.Modules.Admin.Users
+namespace DotNetNuke.Modules.Admin.Users.Profile
 {
     public partial class ViewProfileSettings : ModuleSettingsBase
     {

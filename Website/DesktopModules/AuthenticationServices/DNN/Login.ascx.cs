@@ -41,7 +41,7 @@ using Globals = DotNetNuke.Common.Globals;
 
 #endregion
 
-namespace DotNetNuke.Modules.Admin.Authentication
+namespace DotNetNuke.Modules.Admin.Authentication.DnnDefault
 {
 
 	/// <summary>

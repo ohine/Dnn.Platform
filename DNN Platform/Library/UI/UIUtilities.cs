@@ -174,7 +174,7 @@ namespace DotNetNuke.UI
             return IsLegacyUI(moduleId, key, portalId);
         }
 
-        internal static string GetLocalResourceFile(Control ctrl)
+        public static string GetLocalResourceFile(Control ctrl)
         {
             string resourceFileName = Null.NullString;
 

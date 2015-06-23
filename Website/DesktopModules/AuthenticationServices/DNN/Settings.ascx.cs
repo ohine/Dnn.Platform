@@ -27,7 +27,7 @@ using DotNetNuke.Services.Exceptions;
 
 #endregion
 
-namespace DotNetNuke.Modules.Admin.Authentication
+namespace DotNetNuke.Modules.Admin.Authentication.DnnDefault
 {
     public partial class Settings : AuthenticationSettingsBase
     {

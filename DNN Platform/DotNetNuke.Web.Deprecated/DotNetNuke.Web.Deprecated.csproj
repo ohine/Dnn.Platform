@@ -8,7 +8,7 @@
     <ProjectGuid>{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>DotNetNuke.Web</RootNamespace>
-    <AssemblyName>DotNetNuke.Web</AssemblyName>
+    <AssemblyName>DotNetNuke.Web.Deprecated</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>WebControl</MyType>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -46,7 +46,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\</OutputPath>
-    <DocumentationFile>bin\DotNetNuke.Web.XML</DocumentationFile>
+    <DocumentationFile>bin\DotNetNuke.Web.Deprecated.xml</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <LangVersion>default</LangVersion>
@@ -57,7 +57,7 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\</OutputPath>
-    <DocumentationFile>bin\DotNetNuke.Web.XML</DocumentationFile>
+    <DocumentationFile>bin\DotNetNuke.Web.Deprecated.xml</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -127,7 +127,6 @@
     <Compile Include="UI\WebControls\DnnToolTip.cs" />
     <Compile Include="UI\WebControls\DnnTreeNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\RibbonBarManager.cs" />
     <Compile Include="UI\Utilities.cs" />
     <Compile Include="UI\WebControls\DnnAjaxLoadingPanel.cs" />
     <Compile Include="UI\WebControls\DnnAjaxPanel.cs" />

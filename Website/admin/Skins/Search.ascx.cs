@@ -23,8 +23,6 @@
 using System;
 using System.Collections;
 
-using ClientDependency.Core;
-
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.Entities.Host;
 using DotNetNuke.Entities.Modules;
