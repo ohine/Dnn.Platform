@@ -14,8 +14,6 @@
     <InstallExclude Include="$(WebsitePath)\release.config"/>
     <InstallExclude Include="$(WebsitePath)\DotNetNuke.vstemplate"/>
     <InstallExclude Include="$(WebsitePath)\dotnetnuke.webproj"/>
-    <InstallExclude Include="$(WebsitePath)\bin\*.pdb"/>
-    <InstallExclude Include="$(WebsitePath)\bin\*.xml"/>
     <InstallExclude Include="$(WebsitePath)\bin\DotNetNuke.Modules.*"/>
     <InstallExclude Include="$(WebsitePath)\bin\DotNetNuke.Enterprise.*"/>
     <InstallExclude Include="$(WebsitePath)\bin\DotNetNuke.Professional.*"/>
@@ -32,6 +30,8 @@
     <InstallExclude Include="$(WebsitePath)\Install\Provider\RadEditorProvider_06.01.02_Install.resources" />
     <InstallExclude Include="$(WebsitePath)\Install\Provider\FiftyOnePremiumProvider_*_Install.zip" />
     <InstallExclude Include="$(WebsitePath)\Install\AuthSystem\DNNPro*"/>
+	<InstallExclude Include="$(WebsitePath)\**\*.cs" />
+	<InstallExclude Include="$(WebsitePath)\bin\**\*.*"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -64,6 +64,8 @@
   <Target Name="CreateInstall" DependsOnTargets="Compile">
     <ItemGroup>
       <InstallPackage Include="$(WebsitePath)\**\*.*" Exclude="@(InstallExclude)" />
+	  <InstallPackage Include="$(WebsitePath)\bin\*.dll" />
+	  <InstallPackage Include="$(WebsitePath)\bin\Providers\*.dll" />
     </ItemGroup>
 
     <Zip Files="@(InstallPackage)" WorkingDirectory="$(WebsitePath)\" ZipFileName="$(PlatformRoot)\$(PackageName)_Install.zip" />
