@@ -1,5 +1,5 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.UI.ControlPanels.ControlBar"
-    CodeFile="ControlBar.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.UI.ControlPanels.ControlBar"
+    CodeBehind="ControlBar.ascx.cs" %>
 <%@ Import Namespace="DotNetNuke.Security.Permissions" %>
 <%@ Register TagPrefix="dnn" Namespace="DotNetNuke.Web.UI.WebControls" Assembly="DotNetNuke.Web" %>
 <!--SEO NOINDEX-->

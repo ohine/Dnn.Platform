@@ -146,7 +146,7 @@ namespace DesktopModules.Admin.ModuleCreator
             }
             else
             {
-                UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("FolderNameInvalid", LocalResourceFile), ModuleMessage.ModuleMessageType.RedError);
+                DotNetNuke.UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("FolderNameInvalid", LocalResourceFile), ModuleMessage.ModuleMessageType.RedError);
             }
 
 
@@ -227,7 +227,7 @@ namespace DesktopModules.Admin.ModuleCreator
                 var objStream = File.CreateText(cboFile.SelectedValue);
                 objStream.WriteLine(txtSource.Text);
                 objStream.Close();
-                UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("ControlUpdated", LocalResourceFile), ModuleMessage.ModuleMessageType.GreenSuccess);
+                DotNetNuke.UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("ControlUpdated", LocalResourceFile), ModuleMessage.ModuleMessageType.GreenSuccess);
             }
             catch (Exception exc)
             {
@@ -449,7 +449,7 @@ namespace DesktopModules.Admin.ModuleCreator
                 }
             }
 
-            UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("ControlCreated", LocalResourceFile), ModuleMessage.ModuleMessageType.GreenSuccess);
+            DotNetNuke.UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("ControlCreated", LocalResourceFile), ModuleMessage.ModuleMessageType.GreenSuccess);
 
             return controlName;
         }
@@ -557,7 +557,7 @@ namespace DesktopModules.Admin.ModuleCreator
             }
             else
             {
-                UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("AddControlError", LocalResourceFile), ModuleMessage.ModuleMessageType.YellowWarning);
+                DotNetNuke.UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("AddControlError", LocalResourceFile), ModuleMessage.ModuleMessageType.YellowWarning);
             }
         }
 

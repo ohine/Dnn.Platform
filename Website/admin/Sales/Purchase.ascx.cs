@@ -127,7 +127,7 @@ namespace DotNetNuke.Modules.Admin.Sales
                 }
                 if (RoleID == PortalSettings.AdministratorRoleId)
                 {
-                    strCurrency = Host.HostCurrency;
+                    strCurrency = Entities.Host.Host.HostCurrency;
                 }
                 else
                 {

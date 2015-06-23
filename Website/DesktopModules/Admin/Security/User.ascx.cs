@@ -485,7 +485,7 @@ namespace DotNetNuke.Modules.Admin.Users
             base.OnPreRender(e);
 
 
-			if (Host.EnableStrengthMeter)
+            if (Entities.Host.Host.EnableStrengthMeter)
 			{
 				passwordContainer.CssClass = "password-strength-container";
 				txtPassword.CssClass = "password-strength";

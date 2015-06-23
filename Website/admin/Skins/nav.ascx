@@ -1,1 +1,1 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.UI.Skins.Controls.Nav" CodeFile="Nav.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.UI.Skins.Controls.Nav" CodeBehind="Nav.ascx.cs" %>

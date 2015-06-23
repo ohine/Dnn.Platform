@@ -372,7 +372,7 @@ namespace DotNetNuke.Modules.Admin.FileManager
                             catch (InvalidFileExtensionException exc)
                             {
                                 Logger.Warn(exc);
-                                strMessage += "<br />" + string.Format(Localization.GetString("RestrictedFileType"), strFileName, Host.AllowedExtensionWhitelist.ToDisplayString());
+                                strMessage += "<br />" + string.Format(Localization.GetString("RestrictedFileType"), strFileName, Entities.Host.Host.AllowedExtensionWhitelist.ToDisplayString());
                             }
                             catch (Exception exc)
                             {

@@ -39,6 +39,7 @@ using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.Localization;
 using DotNetNuke.Services.Mail;
 using DotNetNuke.UI.Skins.Controls;
+using jQuery = DotNetNuke.Framework.jQuery;
 
 #endregion
 

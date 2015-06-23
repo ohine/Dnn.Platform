@@ -47,6 +47,7 @@ using DotNetNuke.Services.Mail;
 using DotNetNuke.UI.Skins.Controls;
 
 using Telerik.Web.UI;
+using jQuery = DotNetNuke.Framework.jQuery;
 
 #endregion
 
@@ -94,7 +95,7 @@ namespace DotNetNuke.Modules.Admin.Portals
             try
             {
                 //ensure portal signup is allowed
-                if ((!IsHostMenu || UserInfo.IsSuperUser == false) && !Host.DemoSignup)
+                if ((!IsHostMenu || UserInfo.IsSuperUser == false) && !Entities.Host.Host.DemoSignup)
                 {
                     Response.Redirect(Globals.NavigateURL("Access Denied"), true);
                 }
@@ -130,7 +131,7 @@ namespace DotNetNuke.Modules.Admin.Portals
 						txtPortalAlias.Text = Globals.GetDomainName(Request) + @"/";
                         rowType.Visible = false;
                         string strMessage = string.Format(Localization.GetString("DemoMessage", LocalResourceFile),
-                                                          Host.DemoPeriod != Null.NullInteger ? " for " + Host.DemoPeriod + " days" : "",
+                                                          Entities.Host.Host.DemoPeriod != Null.NullInteger ? " for " + Entities.Host.Host.DemoPeriod + " days" : "",
                                                           Globals.GetDomainName(Request));
                         lblInstructions.Text = strMessage;
                         lblInstructions.Visible = true;
@@ -483,7 +484,7 @@ namespace DotNetNuke.Modules.Admin.Portals
                                 {
                                     message = Mail.SendMail(PortalSettings.Email,
                                                                txtEmail.Text,
-                                                               PortalSettings.Email + ";" + Host.HostEmail,
+                                                               PortalSettings.Email + ";" + Entities.Host.Host.HostEmail,
                                                                Localization.GetSystemMessage(newSettings, "EMAIL_PORTAL_SIGNUP_SUBJECT", adminUser),
                                                                Localization.GetSystemMessage(newSettings, "EMAIL_PORTAL_SIGNUP_BODY", adminUser),
                                                                "",
@@ -495,9 +496,9 @@ namespace DotNetNuke.Modules.Admin.Portals
                                 }
                                 else
                                 {
-                                    message = Mail.SendMail(Host.HostEmail,
+                                    message = Mail.SendMail(Entities.Host.Host.HostEmail,
                                                                txtEmail.Text,
-                                                               Host.HostEmail,
+                                                               Entities.Host.Host.HostEmail,
                                                                Localization.GetSystemMessage(newSettings, "EMAIL_PORTAL_SIGNUP_SUBJECT", adminUser),
                                                                Localization.GetSystemMessage(newSettings, "EMAIL_PORTAL_SIGNUP_BODY", adminUser),
                                                                "",

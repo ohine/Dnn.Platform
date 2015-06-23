@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DesktopModules.Admin.Security.DNNProfile" CodeFile="Profile.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DesktopModules.Admin.Security.DNNProfile" CodeBehind="Profile.ascx.cs" %>
 <%@ Register TagPrefix="dnn" Assembly="DotNetNuke" Namespace="DotNetNuke.UI.WebControls"%>
 <script language="javascript" type="text/javascript">
 /*globals jQuery, window, Sys */

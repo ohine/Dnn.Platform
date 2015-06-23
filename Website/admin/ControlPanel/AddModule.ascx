@@ -1,5 +1,5 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.UI.ControlPanel.AddModule"
-    CodeFile="AddModule.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.UI.ControlPanel.AddModule"
+    CodeBehind="AddModule.ascx.cs" %>
 <%@ Import Namespace="DotNetNuke.Entities.Modules" %>
 <%@ Register Assembly="Telerik.Web.UI" Namespace="Telerik.Web.UI" TagPrefix="telerik" %>
 <%@ Register TagPrefix="dnn" Namespace="DotNetNuke.Web.UI.WebControls" Assembly="DotNetNuke.Web" %>

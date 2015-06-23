@@ -181,7 +181,7 @@ namespace DotNetNuke.Modules.Admin.Sales
                     if (intRoleID == intAdministratorRoleId)
                     {
 						//admin portal renewal
-                        strProcessorID = Host.ProcessorUserId.ToLower();
+                        strProcessorID = Entities.Host.Host.ProcessorUserId.ToLower();
                         float portalPrice = objPortalInfo.HostFee;
                         if ((portalPrice.ToString() == dblAmount.ToString()) && (HttpUtility.UrlDecode(strPayPalID.ToLower()) == strProcessorID))
                         {

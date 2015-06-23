@@ -53,6 +53,7 @@ using DotNetNuke.Web.UI.WebControls;
 using DotNetNuke.UI.WebControls;
 using System.Web.UI.WebControls;
 using DotNetNuke.Entities.Users.Membership;
+using jQuery = DotNetNuke.Framework.jQuery;
 
 #endregion
 
@@ -302,7 +303,7 @@ namespace DotNetNuke.Modules.Admin.Users
         {
             DnnFormItemBase formItem;
 
-            if (Host.EnableStrengthMeter)
+            if (Entities.Host.Host.EnableStrengthMeter)
             {
                 formItem = new DnnFormPasswordItem
                 {

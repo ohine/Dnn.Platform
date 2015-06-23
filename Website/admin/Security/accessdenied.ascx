@@ -1,1 +1,1 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.Modules.Admin.Security.AccessDeniedPage" CodeFile="AccessDenied.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.Modules.Admin.Security.AccessDeniedPage" CodeBehind="AccessDenied.ascx.cs" %>

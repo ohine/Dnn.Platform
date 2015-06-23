@@ -218,9 +218,9 @@ namespace DotNetNuke.Modules.Admin.SiteLog
                 if (Page.IsPostBack == false)
                 {
                     var strSiteLogStorage = "D";
-                    if (!string.IsNullOrEmpty(Host.SiteLogStorage))
+                    if (!string.IsNullOrEmpty(Entities.Host.Host.SiteLogStorage))
                     {
-                        strSiteLogStorage = Host.SiteLogStorage;
+                        strSiteLogStorage = Entities.Host.Host.SiteLogStorage;
                     }
                     if (strSiteLogStorage == "F")
                     {

@@ -200,7 +200,7 @@ namespace DotNetNuke.Modules.Admin.Authentication.DnnDefault
             }
 
             //see if the portal supports persistant cookies
-            chkCookie.Visible = Host.RememberCheckbox;
+            chkCookie.Visible = Entities.Host.Host.RememberCheckbox;
 
 
 

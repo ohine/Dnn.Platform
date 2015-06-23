@@ -1,1 +1,1 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.UI.Containers.Controls.Toggle" CodeFile="Toggle.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.UI.Containers.Controls.Toggle" CodeBehind="Toggle.ascx.cs" %>

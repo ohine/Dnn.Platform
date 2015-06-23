@@ -146,7 +146,7 @@ namespace DotNetNuke.Modules.Admin.MobilePreview
 				wreq.UserAgent = userAgent;
 				wreq.Referer = Request.Url.ToString();
 				wreq.Method = "GET";
-				wreq.Timeout = Host.WebRequestTimeout;
+                wreq.Timeout = Entities.Host.Host.WebRequestTimeout;
 				wreq.AllowAutoRedirect = false;
 				wreq.ContentType = "application/x-www-form-urlencoded";
 				SetCookies(wreq);

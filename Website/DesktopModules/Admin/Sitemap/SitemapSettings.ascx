@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="false" CodeFile="SitemapSettings.ascx.cs"
+﻿<%@ Control Language="C#" AutoEventWireup="True" CodeBehind="SitemapSettings.ascx.cs"
     Inherits="DotNetNuke.Modules.Admin.Sitemap.SitemapSettings" %>
 <%@ Register TagPrefix="dnn" Assembly="DotNetNuke" Namespace="DotNetNuke.UI.WebControls" %>
 <%@ Register TagPrefix="dnn" Assembly="DotNetNuke.Web" Namespace="DotNetNuke.Web.UI.WebControls" %>

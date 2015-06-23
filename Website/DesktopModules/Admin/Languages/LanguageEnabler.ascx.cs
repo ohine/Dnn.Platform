@@ -394,7 +394,7 @@ namespace DotNetNuke.Modules.Admin.Languages
                 {
                     defaultLanguageLabel.Visible = false;
                     languagesComboBox.Visible = true;
-                    cmdEnableLocalizedContent.Visible = Host.EnableContentLocalization;
+                    cmdEnableLocalizedContent.Visible = Entities.Host.Host.EnableContentLocalization;
                     cmdDisableLocalization.Visible = false;
                     defaultPortalMessage.Text = LocalizeString("PortalDefaultEnabled.Text");
                     enabledPublishedPlaceHolder.Visible = false;

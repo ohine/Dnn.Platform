@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DesktopModules.Admin.ModuleCreator.CreateModule" CodeFile="CreateModule.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DesktopModules.Admin.ModuleCreator.CreateModule" CodeBehind="CreateModule.ascx.cs" %>
 <%@ Register TagPrefix="dnn" TagName="Label" Src="~/controls/LabelControl.ascx" %>
 <%@ Register TagPrefix="dnn" Assembly="DotNetNuke" Namespace="DotNetNuke.UI.WebControls" %>
 

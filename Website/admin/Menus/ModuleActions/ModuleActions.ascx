@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ModuleActions.ascx.cs" Inherits="DotNetNuke.Admin.Containers.ModuleActions" %>
+﻿<%@ Control Language="C#" AutoEventWireup="True" CodeBehind="ModuleActions.ascx.cs" Inherits="DotNetNuke.Admin.Containers.ModuleActions" %>
 <asp:LinkButton runat="server" ID="actionButton" />
 
 <script language="javascript" type="text/javascript">

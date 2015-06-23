@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.Modules.Admin.Scheduler.ViewScheduleHistory" CodeFile="ViewScheduleHistory.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.Modules.Admin.Scheduler.ViewScheduleHistory" CodeBehind="ViewScheduleHistory.ascx.cs" %>
 <%@ Register TagPrefix="dnn" Assembly="DotNetNuke.Web" Namespace="DotNetNuke.Web.UI.WebControls" %>
 <%@ Register TagPrefix="dnn" Namespace="Telerik.Web.UI" %>
 <div class="dnnForm dnnScheduleHistory dnnClear" id="dnnScheduleHistory">

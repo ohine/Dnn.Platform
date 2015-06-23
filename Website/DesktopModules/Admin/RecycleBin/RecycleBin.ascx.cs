@@ -39,6 +39,7 @@ using DotNetNuke.UI.Skins.Controls;
 using DotNetNuke.UI.Utilities;
 
 using Globals = DotNetNuke.Common.Globals;
+using jQuery = DotNetNuke.Framework.jQuery;
 
 #endregion
 

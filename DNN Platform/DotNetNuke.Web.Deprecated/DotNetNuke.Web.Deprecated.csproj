@@ -127,7 +127,6 @@
     <Compile Include="UI\WebControls\DnnToolTip.cs" />
     <Compile Include="UI\WebControls\DnnTreeNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\Utilities.cs" />
     <Compile Include="UI\WebControls\DnnAjaxLoadingPanel.cs" />
     <Compile Include="UI\WebControls\DnnAjaxPanel.cs" />
     <Compile Include="UI\WebControls\DnnFormLabel.cs" />
@@ -303,7 +302,6 @@
     <Compile Include="UI\WebControls\DnnGridTableView.cs" />
     <Compile Include="UI\WebControls\DnnGridTemplateColumn.cs" />
     <Compile Include="UI\ILocalizable.cs" />
-    <Compile Include="UI\MessageWindowParameters.cs" />
     <Compile Include="UI\WebControls\DnnLanguageComboBox.cs" />
     <Compile Include="UI\WebControls\DnnProgressArea.cs" />
     <Compile Include="UI\WebControls\DnnProgressManager.cs" />

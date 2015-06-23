@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.UI.Skins.Controls.Toast" CodeFile="Toast.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.UI.Skins.Controls.Toast" CodeBehind="Toast.ascx.cs" %>
 <script type="text/javascript">
     $(document).ready(function () {
 

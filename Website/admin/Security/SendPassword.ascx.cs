@@ -288,7 +288,7 @@ namespace DotNetNuke.Modules.Admin.Security
                     }
                 }
 
-                if (string.IsNullOrEmpty(Host.SMTPServer))
+                if (string.IsNullOrEmpty(Entities.Host.Host.SMTPServer))
                 {
                     //SMTP Server is not configured
                     canSend = false;

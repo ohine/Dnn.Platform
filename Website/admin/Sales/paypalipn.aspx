@@ -1,1 +1,1 @@
-<%@ Page Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.Modules.Admin.Sales.PayPalIPN" CodeFile="PayPalIPN.aspx.cs" %>
+<%@ Page Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.Modules.Admin.Sales.PayPalIPN" CodeBehind="PayPalIPN.aspx.cs" %>

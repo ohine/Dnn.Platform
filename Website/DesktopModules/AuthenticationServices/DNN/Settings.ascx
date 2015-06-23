@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="false" Inherits="DotNetNuke.Modules.Admin.Authentication.DnnDefault.Settings" CodeFile="Settings.ascx.cs" %>
+<%@ Control Language="C#" AutoEventWireup="True" Inherits="DotNetNuke.Modules.Admin.Authentication.DnnDefault.Settings" CodeBehind="Settings.ascx.cs" %>
 <%@ Register TagPrefix="dnn" Namespace="DotNetNuke.UI.WebControls" Assembly="DotNetNuke" %>
 <dnn:propertyeditorcontrol id="SettingsEditor" runat="Server" 
     editcontrolwidth="200px" 

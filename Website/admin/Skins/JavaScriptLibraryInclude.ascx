@@ -1,1 +1,1 @@
-﻿<%@ Control Language="C#" AutoEventWireup="false" CodeFile="JavaScriptLibraryInclude.ascx.cs" Inherits="DotNetNuke.UI.Skins.Controls.JavaScriptLibraryInclude" %>
+﻿<%@ Control Language="C#" AutoEventWireup="True" CodeBehind="JavaScriptLibraryInclude.ascx.cs" Inherits="DotNetNuke.UI.Skins.Controls.JavaScriptLibraryInclude" %>

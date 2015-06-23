@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SmtpServerSettings.ascx.cs" 
+﻿<%@ Control Language="C#" AutoEventWireup="True" CodeBehind="SmtpServerSettings.ascx.cs" 
     Inherits="DotNetNuke.Modules.Admin.AdvancedSettings.SmtpServerSettings" %>
 <%@ Register TagPrefix="dnn" TagName="Label" Src="~/controls/LabelControl.ascx" %>
 

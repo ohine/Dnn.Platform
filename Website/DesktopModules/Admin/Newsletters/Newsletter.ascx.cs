@@ -43,6 +43,7 @@ using DotNetNuke.Services.Localization;
 using DotNetNuke.Services.Mail;
 using DotNetNuke.Services.Tokens;
 using DotNetNuke.UI.Skins.Controls;
+using jQuery = DotNetNuke.Framework.jQuery;
 
 #endregion
 
@@ -237,11 +238,11 @@ namespace DotNetNuke.Modules.Admin.Newsletters
                 Encoding.UTF8,
                 strStartBody,
                 "",
-                Host.SMTPServer,
-                Host.SMTPAuthentication,
-                Host.SMTPUsername,
-                Host.SMTPPassword,
-                Host.EnableSMTPSSL);
+                Entities.Host.Host.SMTPServer,
+                Entities.Host.Host.SMTPAuthentication,
+                Entities.Host.Host.SMTPUsername,
+                Entities.Host.Host.SMTPPassword,
+                Entities.Host.Host.EnableSMTPSSL);
 
             if (string.IsNullOrEmpty(sendMailResult))
             {
@@ -332,9 +333,9 @@ namespace DotNetNuke.Modules.Admin.Newsletters
             if (ctlAttachment.Url.StartsWith("FileID="))
             {
                 int fileId = int.Parse(ctlAttachment.Url.Substring(7));
-                var objFileInfo = FileManager.Instance.GetFile(fileId);
+                var objFileInfo = Services.FileSystem.FileManager.Instance.GetFile(fileId);
                 //TODO: support secure storage locations for attachments! [sleupold 06/15/2007]
-                email.AddAttachment(FileManager.Instance.GetFileContent(objFileInfo), 
+                email.AddAttachment(Services.FileSystem.FileManager.Instance.GetFileContent(objFileInfo), 
                                                new ContentType { MediaType = objFileInfo.ContentType, Name = objFileInfo.FileName });
             }
 

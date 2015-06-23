@@ -401,15 +401,15 @@ namespace DotNetNuke.Modules.Admin.Extensions
             {
                 wreq.Method = "POST";
             }
-           
-            wreq.Timeout = Host.WebRequestTimeout;
-            
-            if (!string.IsNullOrEmpty(Host.ProxyServer))
+
+            wreq.Timeout = Entities.Host.Host.WebRequestTimeout;
+
+            if (!string.IsNullOrEmpty(Entities.Host.Host.ProxyServer))
             {
-                var proxy = new WebProxy(Host.ProxyServer, Host.ProxyPort);
-                if (!string.IsNullOrEmpty(Host.ProxyUsername))
+                var proxy = new WebProxy(Entities.Host.Host.ProxyServer, Entities.Host.Host.ProxyPort);
+                if (!string.IsNullOrEmpty(Entities.Host.Host.ProxyUsername))
                 {
-                    var proxyCredentials = new NetworkCredential(Host.ProxyUsername, Host.ProxyPassword);
+                    var proxyCredentials = new NetworkCredential(Entities.Host.Host.ProxyUsername, Entities.Host.Host.ProxyPassword);
                     proxy.Credentials = proxyCredentials;
                 }
                 wreq.Proxy = proxy;
