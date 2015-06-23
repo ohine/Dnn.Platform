@@ -115,31 +115,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SolutionInfo.cs = SolutionInfo.cs
 	EndProjectSection
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "DNN_Platform", "http://localhost/DNN_Platform", "{6CD360CB-28EF-4727-90D3-06E2741EC568}"
-	ProjectSection(WebsiteProperties) = preProject
-		SccProjectName = ""
-		SccAuxPath = ""
-		SccLocalPath = ""
-		SccProvider = ""
-		UseIISExpress = "false"
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
-		Debug.AspNetCompiler.VirtualPath = "/DNN_Platform"
-		Debug.AspNetCompiler.PhysicalPath = "Website\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\DNN_Platform\"
-		Debug.AspNetCompiler.Updateable = "true"
-		Debug.AspNetCompiler.ForceOverwrite = "true"
-		Debug.AspNetCompiler.FixedNames = "false"
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/DNN_Platform"
-		Release.AspNetCompiler.PhysicalPath = "Website\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\DNN_Platform\"
-		Release.AspNetCompiler.Updateable = "true"
-		Release.AspNetCompiler.ForceOverwrite = "true"
-		Release.AspNetCompiler.FixedNames = "false"
-		Release.AspNetCompiler.Debug = "False"
-		SlnRelativePath = "Website\"
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetNuke.Tests.Taxonomy", "DNN Platform\Tests\DotNetNuke.Tests.Taxonomy\DotNetNuke.Tests.Taxonomy.csproj", "{86019DD5-96F3-4748-B47C-E51D0E81F219}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetNuke.Tests.Integration", "DNN Platform\Tests\DotNetNuke.Tests.Integration\DotNetNuke.Tests.Integration.csproj", "{6629A64D-58B9-48B9-B932-15AF193C2212}"
@@ -222,6 +197,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5EC5DB
 	EndProjectSection
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DotNetNuke.WebUtility", "DNN Platform\DotNetNuke.WebUtility\DotNetNuke.WebUtility.vbproj", "{4912F062-F8A8-4F9D-8F8E-244EBEE1ACBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetNuke.Web.Deprecated", "DNN Platform\DotNetNuke.Web.Deprecated\DotNetNuke.Web.Deprecated.csproj", "{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetNuke.Website", "Website\DotNetNuke.Website.csproj", "{7F680294-37DA-4901-A19B-AF09794F73D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -493,10 +472,6 @@ Global
 		{705708E8-6AD9-4021-9B36-EFC83AD42EE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{705708E8-6AD9-4021-9B36-EFC83AD42EE7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{705708E8-6AD9-4021-9B36-EFC83AD42EE7}.Release|x86.ActiveCfg = Release|Any CPU
-		{6CD360CB-28EF-4727-90D3-06E2741EC568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CD360CB-28EF-4727-90D3-06E2741EC568}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6CD360CB-28EF-4727-90D3-06E2741EC568}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CD360CB-28EF-4727-90D3-06E2741EC568}.Release|x86.ActiveCfg = Debug|Any CPU
 		{86019DD5-96F3-4748-B47C-E51D0E81F219}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{86019DD5-96F3-4748-B47C-E51D0E81F219}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86019DD5-96F3-4748-B47C-E51D0E81F219}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -521,6 +496,20 @@ Global
 		{4912F062-F8A8-4F9D-8F8E-244EBEE1ACBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4912F062-F8A8-4F9D-8F8E-244EBEE1ACBD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4912F062-F8A8-4F9D-8F8E-244EBEE1ACBD}.Release|x86.ActiveCfg = Release|Any CPU
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}.Debug|x86.ActiveCfg = Debug|x86
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}.Debug|x86.Build.0 = Debug|x86
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}.Release|x86.ActiveCfg = Release|x86
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33}.Release|x86.Build.0 = Release|x86
+		{7F680294-37DA-4901-A19B-AF09794F73D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F680294-37DA-4901-A19B-AF09794F73D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F680294-37DA-4901-A19B-AF09794F73D7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7F680294-37DA-4901-A19B-AF09794F73D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F680294-37DA-4901-A19B-AF09794F73D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F680294-37DA-4901-A19B-AF09794F73D7}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -590,5 +579,6 @@ Global
 		{96F739AA-D737-4A48-B423-326B4ED37425} = {886DB964-63D4-4841-81D1-5A7360C98230}
 		{A765907D-1AB9-4CF4-AAAB-FC2F8049EEBA} = {29273BE6-1AA8-4970-98A0-41BFFEEDA67B}
 		{4912F062-F8A8-4F9D-8F8E-244EBEE1ACBD} = {1DFA65CE-5978-49F9-83BA-CFBD0C7A1814}
+		{9BA59B3D-9FFB-4A9E-BD7D-8B58D08B3A33} = {29273BE6-1AA8-4970-98A0-41BFFEEDA67B}
 	EndGlobalSection
 EndGlobal
