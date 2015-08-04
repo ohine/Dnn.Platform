@@ -832,9 +832,27 @@
             To modify move field declaration from designer file to code-behind file.
             </remarks>
         </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.divCurrentVersion">
+        <member name="F:DotNetNuke.Modules.Html.EditHtml.divCurrentWorkflowState">
             <summary>
-            divCurrentVersion control.
+            divCurrentWorkflowState control.
+            </summary>
+            <remarks>
+            Auto-generated field.
+            To modify move field declaration from designer file to code-behind file.
+            </remarks>
+        </member>
+        <member name="F:DotNetNuke.Modules.Html.EditHtml.plCurrentWorkflowState">
+            <summary>
+            plCurrentWorkflowState control.
+            </summary>
+            <remarks>
+            Auto-generated field.
+            To modify move field declaration from designer file to code-behind file.
+            </remarks>
+        </member>
+        <member name="F:DotNetNuke.Modules.Html.EditHtml.lblCurrentWorkflowState">
+            <summary>
+            lblCurrentWorkflowState control.
             </summary>
             <remarks>
             Auto-generated field.
@@ -859,45 +877,9 @@
             To modify move field declaration from designer file to code-behind file.
             </remarks>
         </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.plCurrentWorkflowInUse">
-            <summary>
-            plCurrentWorkflowInUse control.
-            </summary>
-            <remarks>
-            Auto-generated field.
-            To modify move field declaration from designer file to code-behind file.
-            </remarks>
-        </member>
         <member name="F:DotNetNuke.Modules.Html.EditHtml.lblCurrentWorkflowInUse">
             <summary>
             lblCurrentWorkflowInUse control.
-            </summary>
-            <remarks>
-            Auto-generated field.
-            To modify move field declaration from designer file to code-behind file.
-            </remarks>
-        </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.divCurrentWorkflowState">
-            <summary>
-            divCurrentWorkflowState control.
-            </summary>
-            <remarks>
-            Auto-generated field.
-            To modify move field declaration from designer file to code-behind file.
-            </remarks>
-        </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.plCurrentWorkflowState">
-            <summary>
-            plCurrentWorkflowState control.
-            </summary>
-            <remarks>
-            Auto-generated field.
-            To modify move field declaration from designer file to code-behind file.
-            </remarks>
-        </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.lblCurrentWorkflowState">
-            <summary>
-            lblCurrentWorkflowState control.
             </summary>
             <remarks>
             Auto-generated field.
@@ -1129,18 +1111,18 @@
             To modify move field declaration from designer file to code-behind file.
             </remarks>
         </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.cmdPreview">
+        <member name="F:DotNetNuke.Modules.Html.EditHtml.cmdEdit">
             <summary>
-            cmdPreview control.
+            cmdEdit control.
             </summary>
             <remarks>
             Auto-generated field.
             To modify move field declaration from designer file to code-behind file.
             </remarks>
         </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.cmdEdit">
+        <member name="F:DotNetNuke.Modules.Html.EditHtml.cmdPreview">
             <summary>
-            cmdEdit control.
+            cmdPreview control.
             </summary>
             <remarks>
             Auto-generated field.
@@ -1156,18 +1138,18 @@
             To modify move field declaration from designer file to code-behind file.
             </remarks>
         </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.cmdMasterContent">
+        <member name="F:DotNetNuke.Modules.Html.EditHtml.ddlRender">
             <summary>
-            cmdMasterContent control.
+            ddlRender control.
             </summary>
             <remarks>
             Auto-generated field.
             To modify move field declaration from designer file to code-behind file.
             </remarks>
         </member>
-        <member name="F:DotNetNuke.Modules.Html.EditHtml.ddlRender">
+        <member name="F:DotNetNuke.Modules.Html.EditHtml.cmdMasterContent">
             <summary>
-            ddlRender control.
+            cmdMasterContent control.
             </summary>
             <remarks>
             Auto-generated field.

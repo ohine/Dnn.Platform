@@ -500,6 +500,8 @@ namespace DotNetNuke.Services.FileSystem
             Requires.NotNull("folderPath", folderPath);
             Requires.NotNull("folderMapping", folderMapping);
 
+	        folderPath = folderPath.Trim();
+
             if (FolderExists(folderMapping.PortalID, folderPath))
             {
                 throw new FolderAlreadyExistsException(Localization.Localization.GetExceptionMessage("AddFolderAlreadyExists", "The provided folder path already exists. The folder has not been added."));
@@ -1759,11 +1761,8 @@ namespace DotNetNuke.Services.FileSystem
                 //Add any folders from non-core providers
                 if (folderMapping.MappingName != "Standard" && folderMapping.MappingName != "Secure" && folderMapping.MappingName != "Database")
                 {
-                    if (!isRecursive)
-                    {
-                        mergedItem.ExistsInFolderMapping = true;
-                    }
-                    else
+                    mergedItem.ExistsInFolderMapping = true;
+                    if (isRecursive)
                     {
                         var folder = GetFolder(portalId, mergedItem.FolderPath);
                         mappedFolders = MergeFolderLists(mappedFolders, GetFolderMappingFoldersRecursive(folderMapping, folder));

@@ -263,6 +263,14 @@
             Sanitizes the upload filename to follow RFC2396 URL spec
             </summary>
         </member>
+        <member name="M:DotNetNuke.Web.InternalServices.ModuleServiceController.DeleteModule(DotNetNuke.Web.InternalServices.ModuleServiceController.DeleteModuleDto)">
+            <summary>
+            Web method that deletes a tab module.
+            </summary>
+            <remarks>This has been introduced for integration testing purpuses.</remarks>
+            <param name="deleteModuleDto">delete module dto</param>
+            <returns>Http response message</returns>
+        </member>
         <member name="T:DotNetNuke.Web.InternalServices.MessagingServiceController.SearchResult">
             <summary>
             This class stores a single search result needed by jQuery Tokeninput
@@ -838,6 +846,11 @@
             To avoid fetching data from the database in constructor, the OnSerializing method is consumed
             </summary>
             <param name="context"></param>
+        </member>
+        <member name="P:DotNetNuke.Web.UI.WebControls.DnnFormTextBoxItem.ClearContentInPasswordMode">
+            <summary>
+            do not output field's value after post back when text mode set to password mode.
+            </summary>
         </member>
         <member name="M:DotNetNuke.Web.UI.WebControls.Extensions.ListControlExtensions.FindByTextWithIgnoreCase(System.Web.UI.WebControls.ListItemCollection,System.String)">
             <summary>

@@ -18,7 +18,31 @@
     </file>
     <file>
       <path />
+      <name>web.config</name>
+    </file>
+    <file>
+      <path />
       <name>packages.config</name>
+    </file>
+    <file>
+      <path />
+      <name>web.Debug.config</name>
+    </file>
+    <file>
+      <path />
+      <name>web.Release.config</name>
+    </file>
+    <file>
+      <path>Views/</path>
+      <name>RedirectionManagerView.ascx</name>
+    </file>
+    <file>
+      <path>Views/</path>
+      <name>RedirectionSettingsView.ascx</name>
+    </file>
+    <file>
+      <path>Views/</path>
+      <name>SimpleSettingsView.ascx</name>
     </file>
   </files>
 </dotnetnuke>

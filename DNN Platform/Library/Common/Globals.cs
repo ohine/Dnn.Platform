@@ -61,7 +61,6 @@ using DotNetNuke.Instrumentation;
 using DotNetNuke.Security;
 using DotNetNuke.Security.Permissions;
 using DotNetNuke.Security.Roles;
-using DotNetNuke.Security.Roles.Internal;
 using DotNetNuke.Services.Cache;
 using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.FileSystem;
@@ -2233,7 +2232,19 @@ namespace DotNetNuke.Common
         /// <param name="strRoot">The root.</param>
         public static void DeleteFolderRecursive(string strRoot)
         {
-            FileSystemUtils.DeleteFolderRecursive(strRoot);
+            if (String.IsNullOrEmpty(strRoot) || !Directory.Exists(strRoot))
+            {
+                return;
+            }
+            foreach (var strFolder in Directory.GetDirectories(strRoot))
+            {
+                DeleteFolderRecursive(strFolder);
+            }
+            foreach (var strFile in Directory.GetFiles(strRoot))
+            {
+                DeleteFile(strFile);
+            }
+            DeleteFolder(strRoot);
         }
 
         /// <summary>
@@ -2243,7 +2254,59 @@ namespace DotNetNuke.Common
         /// <param name="filter">The filter.</param>
         public static void DeleteFilesRecursive(string strRoot, string filter)
         {
-            FileSystemUtils.DeleteFilesRecursive(strRoot, filter);
+            if (String.IsNullOrEmpty(strRoot) || !Directory.Exists(strRoot))
+            {
+                return;
+            }
+            foreach (var strFolder in Directory.GetDirectories(strRoot))
+            {
+                var directory = new DirectoryInfo(strFolder);
+                if ((directory.Attributes & FileAttributes.Hidden) == 0 && (directory.Attributes & FileAttributes.System) == 0)
+                {
+                    DeleteFilesRecursive(strFolder, filter);
+                }
+            }
+            foreach (var strFile in Directory.GetFiles(strRoot, "*" + filter))
+            {
+                DeleteFile(strFile);
+            }
+        }
+
+        private static void DeleteFile(string filePath)
+        {
+            try
+            {
+                FileSystemUtils.DeleteFile(filePath);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+        }
+        
+        private static void DeleteFolder(string strRoot)
+        {
+            try
+            {
+                Directory.Delete(strRoot);
+            }
+            catch (IOException)
+            {
+                //Force Deletion. Directory should be empty
+                try
+                {
+                    Thread.Sleep(50);
+                    Directory.Delete(strRoot, true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                    }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
         }
 
         /// <summary>
@@ -2522,8 +2585,8 @@ namespace DotNetNuke.Common
             {
                 return (ApplicationURL(_portalSettings.ActiveTab.TabID));
             }
-            return (ApplicationURL(-1));            
-        }
+                return (ApplicationURL(-1));
+            }
 
         /// -----------------------------------------------------------------------------
         /// <summary>

@@ -935,6 +935,32 @@ namespace DotNetNuke.Modules.Admin.Tabs
                     TabController.Instance.CreateLocalizedCopies(Tab);
                     //Refresh tab
                     _tab = TabController.Instance.GetTab(Tab.TabID, Tab.PortalID, true);
+
+					//change the localized pages order to match original order.
+	                if (positionTabId > Null.NullInteger)
+	                {
+		                var positionTab = TabController.Instance.GetTab(positionTabId, Tab.PortalID);
+		                if (positionTab != null)
+		                {
+			                foreach (var localizedTab in Tab.LocalizedTabs.Values)
+			                {
+				                var cultureCode = localizedTab.CultureCode;
+								if (positionTab.LocalizedTabs.ContainsKey(cultureCode))
+				                {
+									var localizedPositionTab = positionTab.LocalizedTabs[cultureCode];
+
+									if (rbInsertPosition.SelectedValue == "After")
+									{
+										TabController.Instance.MoveTabAfter(localizedTab, localizedPositionTab.TabID);
+									}
+									else if (rbInsertPosition.SelectedValue == "Before")
+									{
+										TabController.Instance.MoveTabBefore(localizedTab, localizedPositionTab.TabID);
+									}
+				                }
+			                }
+		                }
+	                }
                 }
 
                 var copyTabId = cboCopyPage.Visible && cboCopyPage.SelectedItem != null ? cboCopyPage.SelectedItemValueAsInt : Null.NullInteger;
@@ -1707,8 +1733,12 @@ namespace DotNetNuke.Modules.Admin.Tabs
 
             var urlPath = url.TrimStart('/');
             bool modified;
+
+	        var friendlyUrlSettings = new DotNetNuke.Entities.Urls.FriendlyUrlSettings(PortalSettings.PortalId);
+	        urlPath = UrlRewriterUtils.CleanExtension(urlPath, friendlyUrlSettings, string.Empty);
+
             //Clean Url
-            var options = UrlRewriterUtils.ExtendOptionsForCustomURLs( UrlRewriterUtils.GetOptionsFromSettings(new DotNetNuke.Entities.Urls.FriendlyUrlSettings(PortalSettings.PortalId)) );
+			var options = UrlRewriterUtils.ExtendOptionsForCustomURLs(UrlRewriterUtils.GetOptionsFromSettings(friendlyUrlSettings));
             urlPath = FriendlyUrlController.CleanNameForUrl(urlPath, options, out modified);
             if (modified)
             {

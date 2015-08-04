@@ -625,6 +625,11 @@
             Get the IsLocked value, used to put the current portal into maintenance mode. This is a flag which can be used to disable any actions which update the database.
             </summary>
         </member>
+        <member name="P:DotNetNuke.Entities.Portals.PortalSettings.DisablePrivateMessage">
+            <summary>
+            If this is true, then regular users can't send message to specific user/group.
+            </summary>
+        </member>
         <member name="M:DotNetNuke.Collections.CollectionExtensions.CreateDictionaryFromString(System.String,System.Char,System.Char)">
             <summary>
             This method is extracted from the FriendlyUrlSettings class
@@ -4537,7 +4542,7 @@
             </history>
             -----------------------------------------------------------------------------
         </member>
-        <member name="M:DotNetNuke.Common.Utilities.FileSystemUtils.DeleteFolder(System.Int32,SchwabenCode.QuickIO.QuickIODirectoryInfo,System.String)">
+        <member name="M:DotNetNuke.Common.Utilities.FileSystemUtils.DeleteFolder(System.Int32,System.IO.DirectoryInfo,System.String)">
             -----------------------------------------------------------------------------
             <summary>
             Deletes a folder
@@ -5634,6 +5639,13 @@
             <param name="initializer">A function that is called in order to create a default value per HttpContext.Current.Session</param>
             <remarks></remarks>
         </member>
+        <member name="M:DotNetNuke.Common.Utilities.StringExtensions.NormalizeString(System.String)">
+            <summary>
+            Takes a string and removes any diacritics
+            </summary>
+            <param name="input">String to normalize</param>
+            <returns>String without diacritics</returns>
+        </member>
         <member name="M:DotNetNuke.Common.Utilities.UrlUtils.GetQSParamsForNavigateURL">
             <summary>
             getQSParamsForNavigateURL builds up a new querystring. This is necessary
@@ -6452,6 +6464,11 @@
         <member name="P:DotNetNuke.Entities.Content.Workflow.Dto.ActionMessage.Body">
             <summary>
             Body of the message
+            </summary>
+        </member>
+        <member name="P:DotNetNuke.Entities.Content.Workflow.Dto.ActionMessage.SendToast">
+            <summary>
+            Indicates if the message is going to be toasted or not. By default, it is False
             </summary>
         </member>
         <member name="T:DotNetNuke.Entities.Content.Workflow.Entities.Workflow">
@@ -7635,6 +7652,16 @@
             </summary>
             <param name="version">Version number</param>
         </member>
+        <member name="P:DotNetNuke.Entities.Profile.ProfileEventArgs.User">
+            <summary>
+            The user whom's profile has been changed. This includes the Profile property with the updated profile
+            </summary>
+        </member>
+        <member name="P:DotNetNuke.Entities.Profile.ProfileEventArgs.OldProfile">
+            <summary>
+            The user's profile, as it was before the change
+            </summary>
+        </member>
         <member name="T:DotNetNuke.Entities.Tabs.ITabChangeSettings">
             <summary>
             Class responsible to provide settings for Tab Changes
@@ -8715,6 +8742,23 @@
             <param name = "moduleID">ID of the module</param>
             <returns>ArrayList of TabModuleInfo objects</returns>
         </member>
+        <member name="M:DotNetNuke.Entities.Modules.ModuleController.GetModule(System.Int32)">
+            <summary>
+            get a Module object
+            </summary>
+            <param name="moduleID">ID of the module</param>
+            <returns>ModuleInfo object</returns>
+            <remarks>This overload ignores any cached values and always retrieves the latest data
+            from the database.</remarks>
+        </member>
+        <member name="M:DotNetNuke.Entities.Modules.ModuleController.GetModule(System.Int32,System.Int32)">
+            <summary>
+            get a Module object
+            </summary>
+            <param name="moduleID">ID of the module</param>
+            <param name="tabID">ID of the page</param>
+            <returns>ModuleInfo object</returns>
+        </member>
         <member name="M:DotNetNuke.Entities.Modules.ModuleController.GetModule(System.Int32,System.Int32,System.Boolean)">
             <summary>
             get a Module object
@@ -8722,7 +8766,7 @@
             <param name="moduleID">ID of the module</param>
             <param name="tabID">ID of the page</param>
             <param name="ignoreCache">flag, if data shall not be taken from cache</param>
-            <returns>ArrayList of ModuleInfo objects</returns>
+            <returns>ModuleInfo object</returns>
         </member>
         <member name="M:DotNetNuke.Entities.Modules.ModuleController.GetModuleByCulture(System.Int32,System.Int32,System.Int32,DotNetNuke.Services.Localization.Locale)">
             <summary>
@@ -10699,7 +10743,7 @@
             Gets the tab.
             </summary>
             <param name="tabId">The tab id.</param>
-            <param name="portalId">The portal id.</param>
+            <param name="portalId">The portal id or <see cref="P:DotNetNuke.Common.Utilities.Null.NullInteger" />.</param>
             <returns>tab info.</returns>
         </member>
         <member name="M:DotNetNuke.Entities.Tabs.TabController.GetTab(System.Int32,System.Int32,System.Boolean)">
@@ -10707,7 +10751,7 @@
             Gets the tab.
             </summary>
             <param name="tabId">The tab id.</param>
-            <param name="portalId">The portal id.</param>
+            <param name="portalId">The portal id or <see cref="P:DotNetNuke.Common.Utilities.Null.NullInteger" />.</param>
             <param name="ignoreCache">if set to <c>true</c> will get tab info directly from database.</param>
             <returns>tab info.</returns>
         </member>
@@ -12042,6 +12086,15 @@
             <param name="status"></param>
             <param name="result"></param>
         </member>
+        <member name="M:DotNetNuke.Entities.Urls.UrlRewriterUtils.CleanExtension(System.String,DotNetNuke.Entities.Urls.FriendlyUrlSettings,System.String)">
+            <summary>
+            Clean Page name to remove page extension.
+            </summary>
+            <param name="value">page name.</param>
+            <param name="settings">friendly url settings.</param>
+            <param name="langParms">language.</param>
+            <returns></returns>
+        </member>
         <member name="T:DotNetNuke.Entities.Urls.XmlHelpers">
             <summary>
             The Xml Helpers class is used to read in parameter rewrite/replace/redirect rules from the friendlyUrlParms.config file
@@ -12118,6 +12171,15 @@
             </summary>
             <param name="portalId">portalid - futureproofing against any setting become site level</param>
             <param name="newPassword">users new password suggestion</param>
+            <returns>true if password has not been used in users history, false otherwise</returns>
+        </member>
+        <member name="M:DotNetNuke.Entities.Users.Membership.MembershipPasswordController.IsPasswordInHistory(System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            checks to see if the password is in history and adds it if it is not
+            </summary>
+            <param name="portalId">portalid - futureproofing against any setting become site level</param>
+            <param name="newPassword">users new password suggestion</param>
+            <param name="autoAdd">If set true then add the password into history if its not used yet.</param>
             <returns>true if password has not been used in users history, false otherwise</returns>
         </member>
         <member name="M:DotNetNuke.Entities.Users.Membership.MembershipPasswordController.IsPasswordPreviouslyUsed(System.Int32,System.String)">
@@ -14733,49 +14795,33 @@
         </member>
         <member name="T:DotNetNuke.Framework.JavaScriptLibraries.CommonJs">
             <summary>
-                this class contains a number of constants that map to javascript library LibraryName's
+                this class contains a number of constants that map to <see cref="P:DotNetNuke.Framework.JavaScriptLibraries.JavaScriptLibrary.LibraryName"/>s
                 done as a series of constants as enums do not allow hyphens or periods
             </summary>
         </member>
         <member name="F:DotNetNuke.Framework.JavaScriptLibraries.CommonJs.jQuery">
-            <summary>
-                jquery LibraryName
-            </summary>
+            <summary>jQuery library name</summary>
         </member>
         <member name="F:DotNetNuke.Framework.JavaScriptLibraries.CommonJs.jQueryMigrate">
-            <summary>
-                jquery migrate LibraryName
-            </summary>
+            <summary>jQuery Migrate library name</summary>
         </member>
         <member name="F:DotNetNuke.Framework.JavaScriptLibraries.CommonJs.jQueryUI">
-            <summary>
-                jqueryUI LibraryName
-            </summary>
+            <summary>jQuery UI library name</summary>
         </member>
         <member name="F:DotNetNuke.Framework.JavaScriptLibraries.CommonJs.Knockout">
-            <summary>
-                knockout LibraryName
-            </summary>
+            <summary>Knockout library name</summary>
         </member>
         <member name="F:DotNetNuke.Framework.JavaScriptLibraries.CommonJs.KnockoutMapping">
-            <summary>
-                knockout mapping LibraryName
-            </summary>
+            <summary>Knockout Mapping library name</summary>
         </member>
         <member name="F:DotNetNuke.Framework.JavaScriptLibraries.CommonJs.jQueryFileUpload">
-            <summary>
-                knockout mapping LibraryName
-            </summary>
+            <summary>jQuery Fileupload library name</summary>
         </member>
         <member name="F:DotNetNuke.Framework.JavaScriptLibraries.CommonJs.DnnPlugins">
-            <summary>
-                knockout mapping LibraryName
-            </summary>
+            <summary>DNN jQuery plugins library name</summary>
         </member>
         <member name="F:DotNetNuke.Framework.JavaScriptLibraries.CommonJs.HoverIntent">
-            <summary>
-                knockout mapping LibraryName
-            </summary>
+            <summary>HoverIntent library name</summary>
         </member>
         <member name="T:DotNetNuke.Framework.JavaScriptLibraries.SpecificVersion">
             <summary>
@@ -18046,6 +18092,80 @@
             </summary>
             <returns>An Integer</returns>
             -----------------------------------------------------------------------------
+        </member>
+        <member name="M:DotNetNuke.Services.Assets.IAssetManager.GetFolderContent(System.Int32,System.Int32,System.Int32,System.String,DotNetNuke.Services.Assets.SubfolderFilter)">
+            <summary>
+            Gets the page of files and folders contained in the specified folder.
+            </summary>
+            <param name="folderId">Folder Identifier</param>
+            <param name="startIndex">Start index to retrieve items</param>
+            <param name="numItems">Max Number of items</param>
+            <param name="sortExpression">The sort expression in a SQL format, e.g. FileName ASC</param>
+            <param name="subfolderFilter"></param>
+            <returns>The list of files and folders contained in the specified folder paginated</returns>
+        </member>
+        <member name="M:DotNetNuke.Services.Assets.IAssetManager.SearchFolderContent(System.Int32,System.String,System.Int32,System.Int32,System.String,DotNetNuke.Services.Assets.SubfolderFilter)">
+            <summary>
+            Searches the files and folders contained in the specified folder.
+            </summary>
+            <param name="moduleId">The id of the Module</param>
+            <param name="folderId">Folder Identifier</param>
+            <param name="pattern">The pattern to search for</param>
+            <param name="startIndex">Start index to retrieve items</param>
+            <param name="numItems">Max Number of items</param>
+            <param name="sortExpression">The sort expression in a SQL format, e.g. FileName ASC</param>
+            <returns>The list of files and folders contained in the specified folder paginated</returns>
+        </member>
+        <member name="M:DotNetNuke.Services.Assets.IAssetManager.GetFolders(DotNetNuke.Services.FileSystem.IFolderInfo,System.String,System.Boolean)">
+            <summary>
+            Gets the list of subfolders for the specified folder.
+            </summary>        
+            <param name="parentFolder">The folder from where to get the list of subfolders.</param>
+            <param name="orderingField">The field to order the list</param>
+            <param name="asc">True to order ascending, false to order descending</param>
+            <returns>The list of subfolders for the specified folder.</returns>
+        </member>
+        <member name="M:DotNetNuke.Services.Assets.IAssetManager.RenameFile(System.Int32,System.String)">
+            <summary>
+            Renames a existing file.
+            </summary>
+            <param name="fileId">File reference to rename</param>
+            <param name="newFileName">The new name to set to the file</param>
+            <returns>The final renamed file</returns>
+        </member>
+        <member name="M:DotNetNuke.Services.Assets.IAssetManager.RenameFolder(System.Int32,System.String)">
+            <summary>
+            Renames a existing folder.
+            </summary>
+            <param name="folderId">Folder reference to rename</param>
+            <param name="newFolderName">The new name to set to the folder</param>
+            <returns>The final renamed folder</returns>
+        </member>
+        <member name="M:DotNetNuke.Services.Assets.IAssetManager.CreateFolder(System.String,System.Int32,System.Int32,System.String)">
+            <summary>
+            Creates a new folder.
+            </summary>
+            <param name="folderName">folderName is the name of the new folder</param>
+            <param name="folderParentId">The reference to the parent folder where the new folder will be create</param>
+            <param name="folderMappingId">folderMappingID is the mapping related with the new folder</param>
+            <param name="mappedPath">mappedPath used for the mapping to folder in remove provider</param>
+            <returns>The newly folder created under the specified parent folder</returns> 
+        </member>
+        <member name="M:DotNetNuke.Services.Assets.IAssetManager.DeleteFolder(System.Int32,System.Boolean,System.Collections.Generic.ICollection{DotNetNuke.Services.FileSystem.IFolderInfo})">
+            <summary>
+            Deletes an existing folder 
+            </summary>
+            <param name="folderId">The ide of the folder to delete</param>
+            <param name="onlyUnlink">In case of a remote folder, specifies that the folder should be unlinked, not deleted</param>
+            <param name="nonDeletedSubfolders">The list of subfolders that could not be deleted, for example due to permissions</param>
+            <returns>True if the folder has been correctly deleted, false otherwise</returns>  
+        </member>
+        <member name="M:DotNetNuke.Services.Assets.IAssetManager.DeleteFile(System.Int32)">
+            <summary>
+            Deletes an existing file
+            </summary>
+            <param name="fileId">The ide of the folder to delete</param>
+            <returns>True if the file has been correctly deleted, false otherwise</returns>  
         </member>
         <member name="M:DotNetNuke.Services.FileSystem.IFileLinkClickController.GetFileLinkClick(DotNetNuke.Services.FileSystem.IFileInfo)">
             <summary>
@@ -21549,6 +21669,10 @@
             <returns>True or False</returns>
              <param name="portalId">Portal Id</param>        
         </member>
+        <member name="M:DotNetNuke.Services.Social.Messaging.Internal.IInternalMessagingController.DisablePrivateMessage(System.Int32)">
+            <summary>Whether disable regular users to send message to user/group, default is false.</summary>        
+             <param name="portalId">Portal Id</param>    
+        </member>
         <member name="T:DotNetNuke.Services.Social.Messaging.Internal.InternalMessagingController">
             <summary>
             Business Layer to manage Messaging. Also contains CRUD methods.
@@ -21584,6 +21708,10 @@
         <member name="M:DotNetNuke.Services.Social.Messaging.Internal.InternalMessagingControllerImpl.RecipientLimit(System.Int32)">
             <summary>Maximum number of Recipients allowed</summary>        
             <returns>Count. Message to a Role is considered a single Recipient. Each User in the To list is counted as one User each.</returns>
+             <param name="portalId">Portal Id</param>        
+        </member>
+        <member name="M:DotNetNuke.Services.Social.Messaging.Internal.InternalMessagingControllerImpl.DisablePrivateMessage(System.Int32)">
+            <summary>Whether disable regular users to send message to user/group, default is false.</summary>        
              <param name="portalId">Portal Id</param>        
         </member>
         <member name="T:DotNetNuke.Services.Social.Messaging.MessageSentStatus">
@@ -22807,6 +22935,72 @@
              ModuleAction class
              </remarks>
             -----------------------------------------------------------------------------
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.AddContent">
+            <summary>An action to create new content</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.EditContent">
+            <summary>An action to edit existing content</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.ContentOptions">
+            <summary>An action to configure the module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.SyndicateModule">
+            <summary>An action to access the RSS feed of a module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.ImportModule">
+            <summary>An action to import content into a module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.ExportModule">
+            <summary>An action to export the content of a module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.ModuleHelp">
+            <summary>An action to view the help for a module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.PrintModule">
+            <summary>An action to print a module's content</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.ModuleSettings">
+            <summary>An action to access the module's settings</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.DeleteModule">
+            <summary>An action to delete the module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.ClearCache">
+            <summary>An action to clear the module's cache</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.MoveTop">
+            <summary>An action to move the module to the top of its pane</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.MoveUp">
+            <summary>An action to move the module up in its pane</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.MoveDown">
+            <summary>An action to move the module down in its pane</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.MoveBottom">
+            <summary>An action to move the module to the bottom of its pane</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.MovePane">
+            <summary>An action to move the module to a different pane</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.MoveRoot">
+            <summary>An action that contains move actions</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.ViewSource">
+            <summary>An action to view the source code of a module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.LocalizeModule">
+            <summary>An action to create a localized version of a module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.DeLocalizeModule">
+            <summary>An action to remove localization for a module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.TranslateModule">
+            <summary>An action to create a translated version of a module</summary>
+        </member>
+        <member name="F:DotNetNuke.Entities.Modules.Actions.ModuleActionType.UnTranslateModule">
+            <summary>An action to remove a translation of a module</summary>
         </member>
         <member name="T:DotNetNuke.Entities.Modules.ControlInfo">
             -----------------------------------------------------------------------------
@@ -25474,6 +25668,15 @@
             <param name="portalId">The Id of the portal.</param>
             <param name="objProfile">The profile.</param>
             -----------------------------------------------------------------------------
+        </member>
+        <member name="M:DotNetNuke.Entities.Profile.ProfileController.SearchProfilePropertyValues(System.Int32,System.String,System.String)">
+            <summary>
+            Searches the profile property values for a string (doesn't need to be the beginning).
+            </summary>
+            <param name="portalId">The portal identifier.</param>
+            <param name="propertyName">Name of the property.</param>
+            <param name="searchString">The search string.</param>
+            <returns>List of matching values</returns>
         </member>
         <member name="T:DotNetNuke.Entities.Profile.ProfilePropertyDefinition">
             -----------------------------------------------------------------------------
@@ -31724,6 +31927,15 @@
             <param name="updateLazyload">Whether to update the lazy load properties: Width, Height, Sha1Hash.</param>
             <returns>The file info</returns>
         </member>
+        <member name="M:DotNetNuke.Services.FileSystem.FileManager.UpdateFile(DotNetNuke.Services.FileSystem.IFileInfo,System.Boolean,System.Boolean)">
+            <summary>
+            Update file info to database.
+            </summary>
+            <param name="file">File info.</param>
+            <param name="updateLazyload">Whether to update the lazy load properties: Width, Height, Sha1Hash.</param>
+            <param name="fireEvent">Whether to fire File events or not</param>
+            <returns>The file info</returns>
+        </member>
         <member name="M:DotNetNuke.Services.FileSystem.FileServerHandler.ProcessRequest(System.Web.HttpContext)">
             -----------------------------------------------------------------------------
             <summary>
@@ -34751,6 +34963,9 @@
             Clone current object.
             </summary>
             <returns></returns>
+        </member>
+        <member name="P:DotNetNuke.Services.Installer.Packages.PackageInfo.Dependencies">
+            <summary>Gets the direct dependencies of this package.</summary>
         </member>
         <member name="P:DotNetNuke.Services.Installer.Packages.PackageInfo.Email">
             -----------------------------------------------------------------------------
@@ -37813,7 +38028,7 @@
             </history>
             -----------------------------------------------------------------------------
         </member>
-        <member name="M:DotNetNuke.Services.Search.SearchEngine.GetModuleMetaData(System.DateTime)">
+        <member name="M:DotNetNuke.Services.Search.SearchEngine.GetModuleMetaData(DotNetNuke.Services.Search.ModuleIndexer,System.DateTime)">
             -----------------------------------------------------------------------------
             <summary>
             Gets all the Searchable Module MetaData SearchDocuments within the timeframe for all portals
@@ -39277,7 +39492,7 @@
         <member name="M:DotNetNuke.Services.Upgrade.Upgrade.DeleteInstallerFiles">
             -----------------------------------------------------------------------------
             <summary>
-              DeleteInstallerFiles - clean up install config
+              DeleteInstallerFiles - clean up install config and installwizard files
               If installwizard is ran again this will be recreated via the dotnetnuke.install.config.resources file
             </summary>
             <remarks>
@@ -41357,6 +41572,13 @@
             	[cnurse]	12/15/2007  created
             </history>
             -----------------------------------------------------------------------------
+        </member>
+        <member name="M:DotNetNuke.UI.Modules.ModuleHost.RestoreCachedClientResourceRegistrations(System.String)">
+            <summary>
+            Restores client resource registrations from the <paramref name="cachedContent"/>.
+            These are registrations that originated from <c>DnnJsInclude</c>, <c>DnnCssInclude</c>, and <c>JavaScriptLibraryInclude</c> controls.
+            </summary>
+            <param name="cachedContent">The HTML text of the cached module.</param>
         </member>
         <member name="M:DotNetNuke.UI.Modules.ModuleHost.CreateChildControls">
             -----------------------------------------------------------------------------
@@ -46400,6 +46622,15 @@
             	[cnurse]	05/03/2006	Created
             </history>
             -----------------------------------------------------------------------------
+        </member>
+        <member name="T:DotNetNuke.UI.WebControls.AutoCompleteControl">
+            <summary>
+            The AutoCompleteControl is the same as a TextEditControl but it looks up similar values
+            in the profile of other users in the same portal and offers those in a dropdown under the text
+            box where the user is entering the value. So if you'd use this as the input control
+            for "City" it will find all entered cities and look up values as the user types the city in
+            the textbox. Selection is not enforced and if a user enters a new city it is added to the list.
+            </summary>
         </member>
         <member name="T:DotNetNuke.UI.WebControls.CheckEditControl">
             -----------------------------------------------------------------------------

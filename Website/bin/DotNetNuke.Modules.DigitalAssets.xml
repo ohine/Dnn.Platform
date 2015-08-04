@@ -249,14 +249,6 @@
             <param name="damState">Module State values collection</param>
             <returns>The index to the tab to be shown</returns>
         </member>
-        <member name="M:DotNetNuke.Modules.DigitalAssets.Components.Controllers.DigitalAssetsController.DeleteFolder(DotNetNuke.Services.FileSystem.IFolderInfo,System.Collections.Generic.ICollection{DotNetNuke.Modules.DigitalAssets.Components.Controllers.Models.ItemPathViewModel})">
-            <summary>
-            This method deletes a folder and his content (sub folder and files) in a recursive way.
-            </summary>
-            <param name="folder">Folder to delete</param>
-            <param name="notDeletedItems">The not deleted items list. The subfiles / subfolders for which the user has no permissions to delete</param>
-            <retur>True if the Folder has been deleted, otherwise returns false</retur>
-        </member>
         <member name="F:DotNetNuke.Modules.DigitalAssets.FileFieldsControl.ScopeWrapper">
             <summary>
             ScopeWrapper control.

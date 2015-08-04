@@ -157,11 +157,8 @@ namespace DotNetNuke.Services.Mail
 
         public static string ConvertToText(string sHTML)
         {
-            string sContent = sHTML;
-            sContent = sContent.Replace("<br />", Environment.NewLine);
-            sContent = sContent.Replace("<br>", Environment.NewLine);
-            sContent = HtmlUtils.FormatText(sContent, true);
-            return HtmlUtils.StripTags(sContent, true);
+            var formattedHtml = HtmlUtils.FormatText(sHTML, true);
+            return HtmlUtils.StripTags(formattedHtml, true);
         }
 
         public static bool IsValidEmailAddress(string Email, int portalid)
@@ -183,7 +180,7 @@ namespace DotNetNuke.Services.Mail
 
         public static void SendEmail(string fromAddress, string senderAddress, string toAddress, string subject, string body)
         {
-            if ((string.IsNullOrEmpty(Host.SMTPServer)))
+			if (string.IsNullOrEmpty(Host.SMTPServer) || string.IsNullOrEmpty(fromAddress) || string.IsNullOrEmpty(senderAddress) || string.IsNullOrEmpty(toAddress))
             {
                 return;
             }
@@ -286,8 +283,10 @@ namespace DotNetNuke.Services.Mail
           
             subject = Localize.GetSystemMessage(locale, settings, subject, user, Localize.GlobalResourceFile, custom, "", settings.AdministratorId);
             body = Localize.GetSystemMessage(locale, settings, body, user, Localize.GlobalResourceFile, custom, "", settings.AdministratorId);
-        
-            SendEmail(settings.Email, UserController.GetUserById(settings.PortalId, toUser).Email, subject, body);
+
+            var fromUser = (UserController.GetUserByEmail(settings.PortalId, settings.Email)!=null)?
+                String.Format("{0} < {1} >", UserController.GetUserByEmail(settings.PortalId, settings.Email).DisplayName, settings.Email) : settings.Email;
+            SendEmail(fromUser, UserController.GetUserById(settings.PortalId, toUser).Email, subject, body);
 
             return Null.NullString;
         }
@@ -488,7 +487,7 @@ namespace DotNetNuke.Services.Mail
             }
 			
             MailMessage mailMessage = null;
-            mailMessage = new MailMessage { From = new MailAddress(mailFrom) };
+            mailMessage = new MailMessage { From = new MailAddress(mailFrom) };         
             if (!String.IsNullOrEmpty(mailTo))
             {
                 //translate semi-colon delimiters to commas as ASP.NET 2.0 does not support semi-colons

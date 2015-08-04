@@ -513,8 +513,6 @@ namespace DotNetNuke.Security.Membership
                             PortalID = Null.SetNullInteger(dr["PortalID"]),
                             IsSuperUser = Null.SetNullBoolean(dr["IsSuperUser"]),
                             UserID = Null.SetNullInteger(dr["UserID"]),
-                            FirstName = Null.SetNullString(dr["FirstName"]),
-                            LastName = Null.SetNullString(dr["LastName"]),
                             DisplayName = Null.SetNullString(dr["DisplayName"]),
                             LastIPAddress = Null.SetNullString(dr["LastIPAddress"])
                         };
@@ -851,6 +849,40 @@ namespace DotNetNuke.Security.Membership
         {
             UserCreateStatus createStatus = ValidateForProfanity(user);
             string service = HttpContext.Current != null ? HttpContext.Current.Request.Params["state"] : string.Empty;
+
+            //DNN-4016
+            //the username exists, first we check to see if this is an OAUTH user
+            bool isOAuthUser = false;
+
+            if (String.IsNullOrEmpty(service) || service.Equals("DNN"))
+            {
+                isOAuthUser = false;
+            }
+            else
+            {
+                try
+                {
+                    UserAuthenticationInfo authUser = AuthenticationController.GetUserAuthentication(user.UserID);
+
+                    // Check that the OAuth service currently being used for login is the same as was previously used (this should always be true if user authenticated to userid)
+                    if (authUser == null || authUser.AuthenticationType.Equals(service, StringComparison.OrdinalIgnoreCase))
+                    {
+                        isOAuthUser = true;
+                        //DNN-4133 Change username to email address to ensure multiple users with the same email prefix, but different email domains can authenticate
+                        user.Username = service + "-" + user.Email;
+                    }
+                    else
+                    {
+                        createStatus = UserCreateStatus.DuplicateEmail;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    createStatus = UserCreateStatus.UnexpectedError;
+                    EventLogController.Instance.AddLog("CreateUser", "Exception checking oauth authentication in CreateUser for userid : " + user.UserID + " " + ex.InnerException.Message, EventLogController.EventLogType.ADMIN_ALERT);
+                }
+            }
 
             if (createStatus == UserCreateStatus.AddUser)
             {
@@ -1711,17 +1743,17 @@ namespace DotNetNuke.Security.Membership
                 {
                     
                     //Check Verification code (skip for FB, Google, Twitter, LiveID as it has no verification code)
-                        if (_socialAuthProviders.Contains(authType) && String.IsNullOrEmpty(verificationCode))
+                    if (_socialAuthProviders.Contains(authType) && String.IsNullOrEmpty(verificationCode))
                     {
                         if (PortalController.Instance.GetCurrentPortalSettings().UserRegistration ==
                             (int) Globals.PortalRegistrationType.PublicRegistration)
                         {
-                            user.Membership.Approved = true;
-                            UserController.UpdateUser(portalId, user);
-                            UserController.ApproveUser(user);    
-                        }
-                        else
-                        {
+                        user.Membership.Approved = true;
+                        UserController.UpdateUser(portalId, user);
+                        UserController.ApproveUser(user);
+                    }
+                    else
+                    {
                             loginStatus = UserLoginStatus.LOGIN_USERNOTAPPROVED;
                         }
                     }

@@ -645,6 +645,7 @@ namespace DotNetNuke.Web.InternalServices
 
                 newModule.UniqueId = Guid.NewGuid(); // Cloned Module requires a different uniqueID
 
+                newModule.PortalID = PortalSettings.Current.PortalId;
                 newModule.TabID = PortalSettings.Current.ActiveTab.TabID;
                 newModule.ModuleOrder = position;
                 newModule.PaneName = paneName;

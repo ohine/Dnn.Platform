@@ -32,5 +32,17 @@
       <path />
       <name>Module.css</name>
     </file>
+    <file>
+      <path />
+      <name>web.config</name>
+    </file>
+    <file>
+      <path />
+      <name>web.Debug.config</name>
+    </file>
+    <file>
+      <path />
+      <name>web.Release.config</name>
+    </file>
   </files>
 </dotnetnuke>
