@@ -311,28 +311,16 @@ namespace DotNetNuke.Entities.Tabs
             }
         }
 
-        private static void DeserializeTabUrls(XmlNodeList nodeTabUrls, TabInfo objTab)
+        private static void DeserializeTabUrls(XmlNode nodeTabUrl, TabUrlInfo objTabUrl)
         {
-            var lastValue = string.Empty;
-            try
-            {
-                foreach (XmlNode oTabUrlNode in nodeTabUrls)
-                {
-                    lastValue = oTabUrlNode.InnerXml;
-
-                    var tabUrlInfo = lastValue.FromJson<TabUrlInfo>();
-
-                    tabUrlInfo.TabId = objTab.TabID;
-
-                    TabController.Instance.SaveTabUrl(tabUrlInfo, objTab.PortalID, false);
-                }
-            }
-            catch (Exception exc)
-            {
-                Exceptions.LogException(exc);
-                Exceptions.LogException(new Exception(lastValue));
-            }
-
+            objTabUrl.SeqNum = XmlUtils.GetAttributeValueAsInteger(nodeTabUrl.CreateNavigator(), "seqNum", 0);
+            objTabUrl.Url = String.IsNullOrEmpty(XmlUtils.GetAttributeValue(nodeTabUrl.CreateNavigator(), "Url")) ? "/" : XmlUtils.GetAttributeValue(nodeTabUrl.CreateNavigator(), "Url");
+            objTabUrl.QueryString = XmlUtils.GetAttributeValue(nodeTabUrl.CreateNavigator(), "QueryString");
+            objTabUrl.CultureCode = XmlUtils.GetAttributeValue(nodeTabUrl.CreateNavigator(), "CultureCode");
+            objTabUrl.HttpStatus = String.IsNullOrEmpty(XmlUtils.GetAttributeValue(nodeTabUrl.CreateNavigator(), "HttpStatus")) ? "200" : XmlUtils.GetAttributeValue(nodeTabUrl.CreateNavigator(), "HttpStatus");
+            objTabUrl.IsSystem = XmlUtils.GetAttributeValueAsBoolean(nodeTabUrl.CreateNavigator(), "IsSystem", true);
+            objTabUrl.PortalAliasId = Null.NullInteger;
+            objTabUrl.PortalAliasUsage = PortalAliasUsageType.Default;
         }
 
         private static void DeserializeTabSettings(XmlNodeList nodeTabSettings, TabInfo objTab)
