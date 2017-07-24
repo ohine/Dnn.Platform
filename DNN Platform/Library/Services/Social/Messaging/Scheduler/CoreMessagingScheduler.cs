@@ -229,12 +229,16 @@ namespace DotNetNuke.Services.Social.Messaging.Scheduler
 
         private static string GetEmailBody(string template, string messageBody, PortalSettings portalSettings, UserInfo recipientUser)
         {
+
+            template = template.Replace("[MESSAGEBODY]", messageBody); //moved to top since that we we can replace tokens in there too...
+            template = template.Replace("[RECIPIENTUSERID]", recipientUser.UserID.ToString());
+            template = template.Replace("[RECIPIENTDISPLAYNAME]", recipientUser.DisplayName);
+            template = template.Replace("[RECIPIENTEMAIL]", recipientUser.Email.ToString());    
             template = template.Replace("[SITEURL]", GetPortalHomeUrl(portalSettings));
             template = template.Replace("[NOTIFICATIONURL]", GetNotificationUrl(portalSettings, recipientUser.UserID));
             template = template.Replace("[PORTALNAME]", portalSettings.PortalName);
             template = template.Replace("[LOGOURL]", GetPortalLogoUrl(portalSettings));
-            template = template.Replace("[UNSUBSCRIBEURL]", GetSubscriptionsUrl(portalSettings, recipientUser.UserID));
-            template = template.Replace("[MESSAGEBODY]", messageBody);
+            template = template.Replace("[UNSUBSCRIBEURL]", GetSubscriptionsUrl(portalSettings, recipientUser.UserID));            
             template = template.Replace("href=\"/", "href=\"http://" + portalSettings.DefaultPortalAlias + "/");
             template = template.Replace("src=\"/", "src=\"http://" + portalSettings.DefaultPortalAlias + "/");
 
@@ -251,7 +255,35 @@ namespace DotNetNuke.Services.Social.Messaging.Scheduler
             emailItemContent = emailItemContent.Replace("[TITLE]", messageDetails.Subject);
             emailItemContent = emailItemContent.Replace("[CONTENT]", messageDetails.Body);
             emailItemContent = emailItemContent.Replace("[PROFILEPICURL]", GetProfilePicUrl(portalSettings, authorId));
+            emailItemContent = emailItemContent.Replace("[PROFILEURL]", GetProfileUrl(portalSettings, authorId));
 
+            if (messageDetails.NotificationTypeID == 1)
+            {
+
+                var toUser = UserController.Instance.GetUser(messageDetails.PortalID, message.UserID);
+                var defaultLanguage = toUser.Profile.PreferredLocale;
+
+                var acceptUrl = GetRelationshipAcceptRequestUrl(portalSettings, authorId, "AcceptFriend");
+                var profileUrl = GetProfileUrl(portalSettings, authorId);
+                var linkContent = GetFriendRequestActionsTemplate(defaultLanguage);
+                emailItemContent = emailItemContent.Replace("[FRIENDREQUESTACTIONS]", string.Format(linkContent, acceptUrl, profileUrl));                
+            }
+            if (messageDetails.NotificationTypeID == 3)
+            {
+
+                var toUser = UserController.Instance.GetUser(messageDetails.PortalID, message.UserID);
+                var defaultLanguage = toUser.Profile.PreferredLocale;
+
+                var acceptUrl = GetRelationshipAcceptRequestUrl(portalSettings, authorId, "FollowBack");
+                var profileUrl = GetProfileUrl(portalSettings, authorId);
+                var linkContent = GetFollowRequestActionsTemplate(defaultLanguage);
+                emailItemContent = emailItemContent.Replace("[FOLLOWREQUESTACTIONS]", string.Format(linkContent, acceptUrl, profileUrl));            
+            }
+
+            //No social actions for the rest of notifications types
+            emailItemContent = emailItemContent.Replace("[FOLLOWREQUESTACTIONS]", "");
+            emailItemContent = emailItemContent.Replace("[FRIENDREQUESTACTIONS]", "");    
+            
             return emailItemContent;
         }
 
@@ -328,7 +360,7 @@ namespace DotNetNuke.Services.Social.Messaging.Scheduler
         private void SendMessage(MessageRecipient messageRecipient)
         {
             //todo: check if host user can send to multiple portals...
-            var messageDetails = InternalMessagingController.Instance.GetMessage(messageRecipient.MessageID);
+            var messageDetails = InternalMessagingController.Instance.GetMessage(messageRecipient.MessageID);            
 
             var toUser = UserController.Instance.GetUser(messageDetails.PortalID, messageRecipient.UserID);
             if (!IsUserAbleToReceiveAnEmail(toUser))
@@ -383,6 +415,16 @@ namespace DotNetNuke.Services.Social.Messaging.Scheduler
             return Localization.Localization.GetString("EMAIL_SUBJECT_FORMAT", Localization.Localization.GlobalResourceFile, language);
         }
 
+        private static string GetFriendRequestActionsTemplate(string language)
+        {
+            return Localization.Localization.GetString("EMAIL_SOCIAL_FRIENDREQUESTACTIONS", Localization.Localization.GlobalResourceFile, language);
+        }
+
+        private static string GetFollowRequestActionsTemplate(string language)
+        {
+            return Localization.Localization.GetString("EMAIL_SOCIAL_FOLLOWREQUESTACTIONS", Localization.Localization.GlobalResourceFile, language);
+        }
+
         private static string GetSenderName(string displayName, string portalName)
         {
             return string.IsNullOrEmpty(displayName) ? portalName : displayName;
@@ -396,9 +438,28 @@ namespace DotNetNuke.Services.Social.Messaging.Scheduler
                 64, 64);
         }
 
+        private static string GetRelationshipAcceptRequestUrl(PortalSettings portalSettings, int userId, string action)
+        {
+            return string.Format("http://{0}/tabid/{1}/userId/{2}/action/{3}/{4}",
+                portalSettings.DefaultPortalAlias,
+                portalSettings.UserTabId,
+                userId.ToString(),
+                action,
+                Globals.glbDefaultPage);
+        }
+
+        private static string GetProfileUrl(PortalSettings portalSettings, int userId)
+        {
+            return string.Format("http://{0}/tabid/{1}/userId/{2}/{3}",
+                portalSettings.DefaultPortalAlias,
+                portalSettings.UserTabId,
+                userId.ToString(),
+                Globals.glbDefaultPage);
+        }
+
         private static string GetNotificationUrl(PortalSettings portalSettings, int userId)
         {
-            var cacheKey = string.Format("MessageCenterTab:{0}", portalSettings.PortalId);
+            var cacheKey = string.Format("MessageCenterTab:{0}:{1}", portalSettings.PortalId, portalSettings.CultureCode);
             var messageTabId = DataCache.GetCache<int>(cacheKey);
             if (messageTabId <= 0)
             {

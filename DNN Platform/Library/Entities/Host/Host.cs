@@ -47,6 +47,7 @@ namespace DotNetNuke.Entities.Host
     /// <summary>
 	/// Contains most of the host settings.
 	/// </summary>
+    [Serializable]
     public class Host : BaseEntityInfo
     {
         #region Public Shared Properties
@@ -135,12 +136,20 @@ namespace DotNetNuke.Entities.Host
         {
             get
             {
-                string setting = HostController.Instance.GetString("ControlPanel");
-                if (string.IsNullOrEmpty(setting))
-                {
-                    setting = Globals.glbDefaultControlPanel;
-                }
-                return setting;
+                return HostController.Instance.GetString("ControlPanel", Globals.glbDefaultControlPanel);
+            }
+        }
+
+        /// <summary>
+        /// setting to control where the control panel is loaded by the core and allowed to control it's own visibility.
+        /// this is useful when the control panel needs to be visible for all users regardless of edit page/module permissions.
+        /// it's also for backwards compatibility, prior to 7.2 the control panel was always loaded. 
+        /// </summary>
+        public static bool AllowControlPanelToDetermineVisibility
+        {
+            get
+            {
+                return HostController.Instance.GetBoolean("AllowControlPanelToDetermineVisibility", Globals.glbAllowControlPanelToDetermineVisibility);
             }
         }
 
@@ -483,6 +492,28 @@ namespace DotNetNuke.Entities.Host
             }
         }
 
+        /// <summary>
+        /// Whether force upgrade wizard open in ssl channel.
+        /// </summary>
+        public static bool UpgradeForceSsl
+        {
+            get
+            {
+                return HostController.Instance.GetBoolean("UpgradeForceSSL", false);
+            }
+        }
+
+        /// <summary>
+        /// The domain used when upgrade wizard forced to shown in ssl channel.
+        /// </summary>
+        public static string SslDomain
+        {
+            get
+            {
+                return HostController.Instance.GetString("SSLDomain");
+            }
+        }
+
         /// -----------------------------------------------------------------------------
         /// <summary>
         ///   Gets whether File AutoSync is Enabled
@@ -646,7 +677,7 @@ namespace DotNetNuke.Entities.Host
                 return HostController.Instance.GetBoolean("SMTPEnableSSL", false);
             }
         }
-
+        
         /// -----------------------------------------------------------------------------
         /// <summary>
         ///   Gets whether the Event Log Buffer is Enabled
@@ -676,7 +707,7 @@ namespace DotNetNuke.Entities.Host
                 return new FileExtensionWhitelist(HostController.Instance.GetString("FileExtensions"));
             }
         }
-
+        
         /// -----------------------------------------------------------------------------
         /// <summary>
         ///   Gets the GUID
@@ -1046,6 +1077,8 @@ namespace DotNetNuke.Entities.Host
             }
         }
 
+        private static Globals.PerformanceSettings? _performanceSetting;
+
         /// -----------------------------------------------------------------------------
         /// <summary>
         ///   Gets the PerformanceSettings
@@ -1061,14 +1094,20 @@ namespace DotNetNuke.Entities.Host
         {
             get
             {
-                Globals.PerformanceSettings setting = Globals.PerformanceSettings.ModerateCaching;
-                string s = HostController.Instance.GetString("PerformanceSetting");
-                if (!string.IsNullOrEmpty(s))
+                if (!_performanceSetting.HasValue)
                 {
-                    setting = (Globals.PerformanceSettings) Enum.Parse(typeof (Globals.PerformanceSettings), s);
+                    var s = HostController.Instance.GetString("PerformanceSetting");
+                    if (string.IsNullOrEmpty(s))
+                    {
+                        return Globals.PerformanceSettings.ModerateCaching;
+                    }
+
+                    _performanceSetting = (Globals.PerformanceSettings)Enum.Parse(typeof(Globals.PerformanceSettings), s);
                 }
-                return setting;
+
+                return _performanceSetting.Value;
             }
+            set { _performanceSetting = value; }
         }
 
         /// -----------------------------------------------------------------------------
@@ -1346,7 +1385,8 @@ namespace DotNetNuke.Entities.Host
         {
             get
             {
-                return HostController.Instance.GetInteger("SiteLogBuffer", 1);
+                var slb = HostController.Instance.GetInteger("SiteLogBuffer", 1);
+                return slb < 1 ? 1 : slb;
             }
         }
 
@@ -1421,9 +1461,9 @@ namespace DotNetNuke.Entities.Host
             {
                 var portalSettings = PortalController.Instance.GetCurrentPortalSettings();
 
-                if (portalSettings == null)
+                if (portalSettings == null || portalSettings.ActiveTab == null)
                 {
-                    //without portal settings, we can't continue
+                    //without portal settings or active tab, we can't continue
                     return false;
                 }
 

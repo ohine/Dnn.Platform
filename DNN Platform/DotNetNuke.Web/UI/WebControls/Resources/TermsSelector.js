@@ -1,4 +1,4 @@
-﻿(function ($, sys) {
+﻿(function ($) {
 	if (typeof webcontrols === "undefined" || webcontrols === null) { webcontrols = {}; };
 	webcontrols.termsSelector = {
 		OnClientDropDownOpened: function (sender, e) {
@@ -17,6 +17,7 @@
 			}
 			var tree = $find($("div[id^=" + clientId + "][id$=_TreeView]").attr("id"));
 			tree.trackChanges();
+			tree.get_nodes().clear();
 			for (var i = 1; i < itemsData.length; i++) {
 				var data = itemsData[i];
 				var node = new Telerik.Web.UI.RadTreeNode();
@@ -109,13 +110,13 @@
 		}, 0);
 	};
 
-	$().ready(function () {
+	$(document).ready(function () {
 		updateTerms();
-		if (typeof sys != "undefined") {
-			sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
+		if (typeof Sys != "undefined") {
+			Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
 				updateTerms();
 			});
 		}
 	});
-}(jQuery, window.Sys));
+}(jQuery));
 

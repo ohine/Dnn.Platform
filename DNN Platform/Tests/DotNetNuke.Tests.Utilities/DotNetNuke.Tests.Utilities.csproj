@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DotNetNuke.Tests.Utilities</RootNamespace>
     <AssemblyName>TestUtilities</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -32,6 +32,8 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Evoq.Content\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -44,6 +46,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>1591</NoWarn>
     <LangVersion>default</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -54,6 +57,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>1591</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ionic.Zip">
@@ -92,8 +96,10 @@
     <Compile Include="Constants.cs" />
     <Compile Include="ContentTestHelper.cs" />
     <Compile Include="DnnUnitTest.cs" />
+    <Compile Include="DnnWebTest.cs" />
     <Compile Include="EnumerableAssert.cs" />
     <Compile Include="ExceptionAssert.cs" />
+    <Compile Include="Fakes\FakeCachingProvider.cs" />
     <Compile Include="FileAssert.cs" />
     <Compile Include="HttpContextHelper.cs" />
     <Compile Include="AssemblyInfo.cs" />
@@ -101,9 +107,7 @@
     <Compile Include="HttpSimulator\HttpSimulatorTests.cs" />
     <Compile Include="HttpSimulator\ReflectionHelper.cs" />
     <Compile Include="HttpSimulator\SimulatedHttpRequest.cs" />
-    <Compile Include="IISManager.cs" />
     <Compile Include="MailAssert.cs" />
-    <Compile Include="MailManager.cs" />
     <Compile Include="Mocks\MockComponentProvider.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -111,7 +115,6 @@
     <Compile Include="SimulatedHttpRequest.cs" />
     <Compile Include="UnitTestHelper.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="WebConfigManager.cs" />
     <Compile Include="ZipManager.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +147,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

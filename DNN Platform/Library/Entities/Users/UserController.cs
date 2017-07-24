@@ -28,7 +28,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using DotNetNuke.Common;
+using DotNetNuke.Common.Internal;
 using DotNetNuke.Common.Utilities;
+using DotNetNuke.Data;
 using DotNetNuke.Entities.Controllers;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Entities.Portals;
@@ -45,7 +47,6 @@ using DotNetNuke.Services.Log.EventLog;
 using DotNetNuke.Services.Mail;
 using DotNetNuke.Services.Messaging.Data;
 using MembershipProvider = DotNetNuke.Security.Membership.MembershipProvider;
-using System.Globalization;
 
 namespace DotNetNuke.Entities.Users
 {
@@ -88,6 +89,28 @@ namespace DotNetNuke.Entities.Users
         public int PortalId { get; set; }
 
         #endregion
+
+        private static event EventHandler<UserEventArgs> UserAuthenticated;
+
+        private static event EventHandler<UserEventArgs> UserCreated;
+
+        private static event EventHandler<UserEventArgs> UserDeleted;
+
+        private static event EventHandler<UserEventArgs> UserRemoved;
+
+        private static event EventHandler<UserEventArgs> UserApproved;
+
+        static UserController()
+        {            
+            foreach (var handlers in EventHandlersContainer<IUserEventHandlers>.Instance.EventHandlers)
+            {
+                UserAuthenticated += handlers.Value.UserAuthenticated;
+                UserCreated += handlers.Value.UserCreated;
+                UserDeleted += handlers.Value.UserDeleted;
+                UserRemoved += handlers.Value.UserRemoved;
+                UserApproved += handlers.Value.UserApproved;
+            }
+        }
 
         #region Private Methods
 
@@ -250,7 +273,7 @@ namespace DotNetNuke.Entities.Users
             var masterPortalId = GetEffectivePortalId(portalId);
             var cacheKey = string.Format(DataCache.UserLookupCacheKey, masterPortalId);
             return CBO.GetCachedObject<Dictionary<int, string>>(new CacheItemArgs(cacheKey, DataCache.UserLookupCacheTimeOut, 
-                                                            DataCache.UserLookupCachePriority), (c) => new Dictionary<int, string>());
+                                                            DataCache.UserLookupCachePriority), (c) => new Dictionary<int, string>(),true);
         }
 
         internal static Hashtable GetUserSettings(int portalId, Hashtable settings)
@@ -563,6 +586,16 @@ namespace DotNetNuke.Entities.Users
             }
         }
 
+        /// -----------------------------------------------------------------------------
+        /// <summary>
+        /// Gets the number count for all duplicate e-mail adresses in the database
+        /// </summary>
+        /// -----------------------------------------------------------------------------
+        public static int GetDuplicateEmailCount()
+        {
+            return DataProvider.Instance().GetDuplicateEmailCount(PortalSettings.Current.PortalId);
+        }
+
         #endregion
 
         #region Public Helper Methods
@@ -791,6 +824,11 @@ namespace DotNetNuke.Entities.Users
                     //autoassign user to portal roles
                     AutoAssignUsersToRoles(user, portalId);
                 }
+
+                if (UserCreated != null)
+                {
+                    UserCreated(null, new UserEventArgs { User = user });
+                }
             }
 
             //Reset PortalId
@@ -807,7 +845,7 @@ namespace DotNetNuke.Entities.Users
         /// -----------------------------------------------------------------------------
         public static void DeleteUnauthorizedUsers(int portalId)
         {
-            var arrUsers = GetUsers(portalId);
+	        var arrUsers = GetUnAuthorizedUsers(portalId);
             for (int i = 0; i < arrUsers.Count; i++)
             {
                 var user = arrUsers[i] as UserInfo;
@@ -836,7 +874,9 @@ namespace DotNetNuke.Entities.Users
             int portalId = user.PortalID;
             user.PortalID = GetEffectivePortalId(portalId);
 
-            var portalSettings = PortalController.Instance.GetCurrentPortalSettings();
+            // If the HTTP Current Context is unavailable (e.g. when called from within a SchedulerClient) GetCurrentPortalSettings() returns null and the 
+            // PortalSettings are created/loaded for the portal (originally) assigned to the user.
+            var portalSettings = PortalController.Instance.GetCurrentPortalSettings() ?? new PortalSettings(portalId);
 
             var canDelete = deleteAdmin || (user.UserID != portalSettings.AdministratorId);
 
@@ -846,9 +886,10 @@ namespace DotNetNuke.Entities.Users
                 DeleteUserPermissions(user);
                 canDelete = MembershipProvider.Instance().DeleteUser(user);
             }
+
             if (canDelete)
             {
-                //Obtain PortalSettings from Current Context
+                //Obtain PortalSettings from Current Context or from the users (original) portal if the HTTP Current Context is unavailable.
                 EventLogController.Instance.AddLog("Username", user.Username, portalSettings, user.UserID, EventLogController.EventLogType.USER_DELETED);
                 if (notify && !user.IsSuperUser)
                 {
@@ -864,10 +905,25 @@ namespace DotNetNuke.Entities.Users
 					DataCache.ClearPortalCache(portalSettings.PortalId, false);
 					DataCache.ClearUserCache(portalSettings.PortalId, user.Username);
 				}
+
+                // queue remove user contributions from search index
+                var document = new Services.Search.Entities.SearchDocumentToDelete
+                {
+                    PortalId = portalId,
+                    AuthorUserId = user.UserID,
+                    SearchTypeId = Services.Search.Internals.SearchHelper.Instance.GetSearchTypeByName("user").SearchTypeId
+                };
+
+                DataProvider.Instance().AddSearchDeletedItems(document);
+
+                if (UserDeleted != null)
+                {
+                    UserDeleted(null, new UserEventArgs { User = user });
+                }
             }
 
             FixMemberPortalId(user, portalId);
-
+            
             return canDelete;
         }
 
@@ -1012,7 +1068,7 @@ namespace DotNetNuke.Entities.Users
         /// -----------------------------------------------------------------------------
         public static UserInfo GetUserById(int portalId, int userId)
         {
-            //we shouldn't go any further for a guest user.... hitting the database every request for a guest user is a bit insane
+            // stop any sql calls for guest users
             if (userId == Null.NullInteger)
             {
                 return null;
@@ -1187,7 +1243,7 @@ namespace DotNetNuke.Entities.Users
             var settings = GetDefaultUserSettings();
             Dictionary<string, string> settingsDictionary = (portalId == Null.NullInteger)
                                                             ? HostController.Instance.GetSettingsDictionary()
-                                                            : PortalController.GetPortalSettingsDictionary(GetEffectivePortalId(portalId));
+                                                            : PortalController.Instance.GetPortalSettings(GetEffectivePortalId(portalId));
             if (settingsDictionary != null)
             {
                 foreach (KeyValuePair<string, string> kvp in settingsDictionary)
@@ -1314,6 +1370,28 @@ namespace DotNetNuke.Entities.Users
         public static ArrayList GetUsersByEmail(int portalId, string emailToMatch, int pageIndex, int pageSize, ref int totalRecords)
         {
             return GetUsersByEmail(portalId, emailToMatch, pageIndex, pageSize, ref totalRecords, false, false);
+        }
+
+        /// -----------------------------------------------------------------------------
+        /// <summary>
+        /// GetUserByEmail gets one single user matching the email address provided
+        /// This will only be useful in portals without duplicate email addresses
+        /// filter expression
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="portalId">The Id of the Portal</param>
+        /// <param name="emailToMatch">The email address to use to find a match.</param>
+        /// <returns>A single user object or null if no user found</returns>
+        /// -----------------------------------------------------------------------------
+        public static UserInfo GetUserByEmail(int portalId, string emailToMatch)
+        {
+            int uid = DataProvider.Instance().GetSingleUserByEmail(portalId, emailToMatch);
+            if (uid > -1)
+            {
+                return GetUserById(portalId, uid);
+            }
+            return null;
         }
 
         /// -----------------------------------------------------------------------------
@@ -1454,7 +1532,7 @@ namespace DotNetNuke.Entities.Users
 
         public static void RemoveDeletedUsers(int portalId)
         {
-            var arrUsers = GetUsers(true, false, portalId);
+	        var arrUsers = GetDeletedUsers(portalId);
 
             foreach (UserInfo objUser in arrUsers)
             {
@@ -1495,6 +1573,7 @@ namespace DotNetNuke.Entities.Users
                     {
                         //try to remove the parent folder if there is no other users use this folder.
                         var parentFolder = FolderManager.Instance.GetFolder(userFolder.ParentID);
+                        FolderManager.Instance.Synchronize(folderPortalId, parentFolder.FolderPath, true, true);
                         if(parentFolder != null && !FolderManager.Instance.GetFolders(parentFolder).Any())
                         {
                             FolderManager.Instance.DeleteFolder(parentFolder, notDeletedSubfolders);
@@ -1503,6 +1582,7 @@ namespace DotNetNuke.Entities.Users
                             {
                                 //try to remove the root folder if there is no other users use this folder.
                                 var rootFolder = FolderManager.Instance.GetFolder(parentFolder.ParentID);
+                                FolderManager.Instance.Synchronize(folderPortalId, rootFolder.FolderPath, true, true);
                                 if (rootFolder != null && !FolderManager.Instance.GetFolders(rootFolder).Any())
                                 {
                                     FolderManager.Instance.DeleteFolder(rootFolder, notDeletedSubfolders);
@@ -1514,6 +1594,11 @@ namespace DotNetNuke.Entities.Users
 
                 DataCache.ClearPortalCache(portalId, false);
                 DataCache.ClearUserCache(portalId, user.Username);
+
+                if (UserRemoved != null)
+                {
+                    UserRemoved(null, new UserEventArgs { User = user });
+                }
             }
 
             //Reset PortalId
@@ -1722,6 +1807,15 @@ namespace DotNetNuke.Entities.Users
 			{
 				DataCache.ClearUserCache(portalId, user.Username);
 			}
+
+            if (user.Membership.Approving)
+            {
+                user.Membership.ConfirmApproved();
+                if (UserApproved != null)
+                {
+                    UserApproved(null, new UserEventArgs { User = user });
+                }                    
+            }
 		}
 
         /// -----------------------------------------------------------------------------
@@ -1786,6 +1880,11 @@ namespace DotNetNuke.Entities.Users
             //set the forms authentication cookie ( log the user in )
             var security = new PortalSecurity();
             security.SignIn(user, createPersistentCookie);
+
+            if (UserAuthenticated != null)
+            {
+                UserAuthenticated(null, new UserEventArgs() {User = user});
+            }
         }
 
         /// -----------------------------------------------------------------------------

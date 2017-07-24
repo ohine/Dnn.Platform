@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -15,7 +15,7 @@
     <RootNamespace>
     </RootNamespace>
     <AssemblyName>DotNetNuke.Modules.RazorHost</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <MyType>Custom</MyType>
     <UseIISExpress>false</UseIISExpress>
     <FileUpgradeFlags>
@@ -26,6 +26,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,6 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn>1591</NoWarn>
     <LangVersion>default</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -44,6 +46,7 @@
     <OutputPath>bin\</OutputPath>
     <DocumentationFile>bin\DotNetNuke.Modules.RazorHost.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
   </PropertyGroup>
@@ -58,11 +61,21 @@
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.ApplicationServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System.Web.DynamicData, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System.Web.Entity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="Telerik.Web.UI">
       <HintPath>..\..\Components\Telerik\bin\Telerik.Web.UI.dll</HintPath>
       <Private>False</Private>
@@ -173,6 +186,13 @@
     <None Include="Scripts\_TabInfo.cshtml" />
     <Content Include="Scripts\Shared\_Header.cshtml" />
     <Content Include="Scripts\_3c_UsingSections.cshtml" />
+    <Content Include="web.config" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\DotNetNuke.Instrumentation\DotNetNuke.Instrumentation.csproj">

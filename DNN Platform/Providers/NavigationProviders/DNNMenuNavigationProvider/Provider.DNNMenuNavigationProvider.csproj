@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
   <PropertyGroup>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
@@ -8,7 +8,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <AssemblyName>DotNetNuke.DNNMenuNavigationProvider</AssemblyName>
     <OutputType>Library</OutputType>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <RootNamespace>DotNetNuke.DNNMenuNavigationProvider</RootNamespace>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -38,6 +38,7 @@
     <NoWarn>1591</NoWarn>
     <RegisterForComInterop>false</RegisterForComInterop>
     <LangVersion>default</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\</OutputPath>
@@ -50,16 +51,12 @@
     <NoWarn>1591</NoWarn>
     <RegisterForComInterop>false</RegisterForComInterop>
     <Optimize>true</Optimize>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetNuke.WebControls, Version=2.2.0.7, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Controls\DotNetNuke.WebControls\bin\DotNetNuke.WebControls.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="DotNetNuke.WebUtility, Version=4.1.2.7, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Controls\DotNetNuke.WebUtility\bin\DotNetNuke.WebUtility.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -80,6 +77,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\DotNetNuke.WebUtility\DotNetNuke.WebUtility.vbproj">
+      <Project>{4912f062-f8a8-4f9d-8f8e-244ebee1acbd}</Project>
+      <Name>DotNetNuke.WebUtility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Library\DotNetNuke.Library.csproj">
       <Project>{D391550C-7107-49B2-A6AC-8627C8B06ADC}</Project>
       <Name>DotNetNuke.Library</Name>

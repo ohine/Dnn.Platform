@@ -23,17 +23,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml;
-
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
+using DotNetNuke.Entities.Content;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Entities.Tabs;
@@ -55,7 +53,6 @@ using DotNetNuke.Web.Client.ClientResourceManagement;
 using DotNetNuke.Web.Common;
 using DotNetNuke.Web.UI;
 using DotNetNuke.Web.UI.WebControls;
-
 using DataCache = DotNetNuke.Common.Utilities.DataCache;
 using Globals = DotNetNuke.Common.Globals;
 using Reflection = DotNetNuke.Framework.Reflection;
@@ -93,7 +90,9 @@ namespace DotNetNuke.Modules.Admin.Tabs
                             _tab = new TabInfo { TabID = Null.NullInteger, PortalID = PortalId };
                             break;
                         case "copy":
-                            _tab = TabController.Instance.GetTab(TabId, PortalId, false).Clone();
+                            var originalTab = TabController.Instance.GetTab(TabId, PortalId, false);
+                            _tab = originalTab.Clone();
+                            InitializeWorkflow(_tab);
                             _tab.TabID = Null.NullInteger;
                             _tab.VersionGuid = Guid.NewGuid();
                             _tab.LocalizedVersionGuid = Guid.NewGuid();
@@ -101,6 +100,10 @@ namespace DotNetNuke.Modules.Admin.Tabs
                             _tab.TabPath = Null.NullString;
                             _tab.DefaultLanguageGuid = Null.NullGuid;
                             _tab.CultureCode = Null.NullString;
+                            foreach (var key in originalTab.TabSettings.Keys)
+                            {
+                                _tab.TabSettings[key] = originalTab.TabSettings[key];
+                            }
 
                             break;
                         default:
@@ -133,6 +136,10 @@ namespace DotNetNuke.Modules.Admin.Tabs
         #endregion
 
         #region Private Methods
+        private void InitializeWorkflow(ContentItem contentItem)
+        {
+            contentItem.StateID = Null.NullInteger;
+        }
 
         private void AddTranslationSubmittedNotification(TabInfo tabInfo, UserInfo translator)
         {
@@ -178,12 +185,6 @@ namespace DotNetNuke.Modules.Admin.Tabs
             listTabs = TabController.GetPortalTabs(listTabs, Null.NullInteger, false, Null.NullString, false, false, false, false, true);
             cboPositionTab.DataSource = listTabs;
             cboPositionTab.DataBind();
-
-            rbInsertPosition.Items.Clear();
-            rbInsertPosition.Items.Add(new ListItem(Localization.GetString("InsertBefore", LocalResourceFile), "Before"));
-            rbInsertPosition.Items.Add(new ListItem(Localization.GetString("InsertAfter", LocalResourceFile), "After"));
-            rbInsertPosition.Items.Add(new ListItem(Localization.GetString("InsertAtEnd", LocalResourceFile), "AtEnd"));
-            rbInsertPosition.SelectedValue = "After";
 
             if (parentTab != null && parentTab.IsSuperTab)
             {
@@ -336,6 +337,7 @@ namespace DotNetNuke.Modules.Admin.Tabs
             if (Tab != null)
             {
                 BindPageDetails();
+                PageDetailsExtensionControl.BindAction(PortalId, Tab.TabID, ModuleId);
 
                 ctlURL.Url = Tab.Url;
                 bool newWindow = false;
@@ -391,7 +393,6 @@ namespace DotNetNuke.Modules.Admin.Tabs
                 chkPermanentRedirect.Checked = Tab.PermanentRedirect;
 
                 ShowPermissions(!Tab.IsSuperTab && TabPermissionController.CanAdminPage());
-                ctlAudit.Entity = Tab;
 
                 termsSelector.PortalId = Tab.PortalID;
                 termsSelector.Terms = Tab.Terms;
@@ -426,17 +427,16 @@ namespace DotNetNuke.Modules.Admin.Tabs
             {
                 var tabList = GetTabs(true, true, false, true);
                 var selectedParentTab = tabList.SingleOrDefault(t => t.TabID == PortalSettings.ActiveTab.TabID);
-                cboParentTab.SelectedPage = selectedParentTab;                   
+                if (selectedParentTab != null &&  (selectedParentTab.TabPath.StartsWith("//Admin") == false && selectedParentTab.TabPath.StartsWith("//Host") == false))
+                {
+                    cboParentTab.SelectedPage = selectedParentTab;
+                }  
             }
             else
             {
                 var tabList = GetTabs(true, true, true, true);
                 var selectedParentTab = tabList.SingleOrDefault(t => t.TabID == PortalSettings.ActiveTab.ParentId);
-
-                if (selectedParentTab != null && (selectedParentTab.TabPath.StartsWith("//Admin")==false && selectedParentTab.TabPath.StartsWith("//Host") == false))
-                {
-                    cboParentTab.SelectedPage = selectedParentTab;
-                }
+                cboParentTab.SelectedPage = selectedParentTab;            
             }
 
             if (string.IsNullOrEmpty(_strAction) || _strAction == "add" || _strAction == "copy")
@@ -629,7 +629,7 @@ namespace DotNetNuke.Modules.Admin.Tabs
             }
             cboFolders.Services.Parameters.Add("permission", "ADD");
             var user = UserController.Instance.GetCurrentUserInfo();
-            var folders = FolderManager.Instance.GetFileSystemFolders(user, "BROWSE, ADD");
+            var folders = FolderManager.Instance.GetFolders(user, "BROWSE, ADD");
             var templateFolder = folders.SingleOrDefault(f => f.DisplayPath == "Templates/");
             if (templateFolder != null)
             {
@@ -778,13 +778,14 @@ namespace DotNetNuke.Modules.Admin.Tabs
                 return Null.NullInteger;
             }
 
-            //Set Culture Code
+            //Set Tab's position
             var positionTabId = Null.NullInteger;
-            if (cboPositionTab.SelectedItem != null)
+            if (!string.IsNullOrEmpty(cboPositionTab.SelectedValue))
             {
-                positionTabId = Int32.Parse(cboPositionTab.SelectedItem.Value);
+                positionTabId = Int32.Parse(cboPositionTab.SelectedValue);
             }
 
+            //Set Culture Code
             if (strAction != "edit")
             {
                 if (PortalSettings.ContentLocalizationEnabled)
@@ -934,6 +935,32 @@ namespace DotNetNuke.Modules.Admin.Tabs
                     TabController.Instance.CreateLocalizedCopies(Tab);
                     //Refresh tab
                     _tab = TabController.Instance.GetTab(Tab.TabID, Tab.PortalID, true);
+
+					//change the localized pages order to match original order.
+	                if (positionTabId > Null.NullInteger)
+	                {
+		                var positionTab = TabController.Instance.GetTab(positionTabId, Tab.PortalID);
+		                if (positionTab != null)
+		                {
+			                foreach (var localizedTab in Tab.LocalizedTabs.Values)
+			                {
+				                var cultureCode = localizedTab.CultureCode;
+								if (positionTab.LocalizedTabs.ContainsKey(cultureCode))
+				                {
+									var localizedPositionTab = positionTab.LocalizedTabs[cultureCode];
+
+									if (rbInsertPosition.SelectedValue == "After")
+									{
+										TabController.Instance.MoveTabAfter(localizedTab, localizedPositionTab.TabID);
+									}
+									else if (rbInsertPosition.SelectedValue == "Before")
+									{
+										TabController.Instance.MoveTabBefore(localizedTab, localizedPositionTab.TabID);
+									}
+				                }
+			                }
+		                }
+	                }
                 }
 
                 var copyTabId = cboCopyPage.Visible && cboCopyPage.SelectedItem != null ? cboCopyPage.SelectedItemValueAsInt : Null.NullInteger;
@@ -1075,6 +1102,8 @@ namespace DotNetNuke.Modules.Admin.Tabs
                 }
             }
 
+            PageDetailsExtensionControl.SaveAction(PortalId, Tab.TabID, ModuleId);
+
             // url tracking
             var objUrls = new UrlController();
             objUrls.UpdateUrl(PortalId, ctlURL.Url, ctlURL.UrlType, 0, Null.NullDate, Null.NullDate, ctlURL.Log, ctlURL.Track, Null.NullInteger, ctlURL.NewWindow);
@@ -1161,7 +1190,7 @@ namespace DotNetNuke.Modules.Admin.Tabs
                         {
                             if (redirecturl.Url == url && redirecturl.HttpStatus != "200")
                             {
-                                TabController.Instance.DeleteTabUrl(redirecturl, Tab.PortalID, false);
+                                TabController.Instance.DeleteTabUrl(redirecturl, Tab.PortalID, true);
                             }
                         }
                     }
@@ -1186,16 +1215,30 @@ namespace DotNetNuke.Modules.Admin.Tabs
             }
             else if (ReferenceEquals(control.GetType(), typeof(DnnComboBox)))
             {
+                var dnnComboBox = (DnnComboBox)control;
                 if (!string.IsNullOrEmpty(Convert.ToString(tabSettings[tabSettingsKey])))
                 {
-                    ((DnnComboBox)control).ClearSelection();
-                    ((DnnComboBox)control).FindItemByValue(tabSettings[tabSettingsKey].ToString()).Selected = true;
+                    dnnComboBox.ClearSelection();
+                    dnnComboBox.FindItemByValue(tabSettings[tabSettingsKey].ToString()).Selected = true;
                 }
                 else
                 {
-                    ((DnnComboBox)control).ClearSelection();
-                    ((DnnComboBox)control).FindItemByValue("").Selected = true;
+                    dnnComboBox.ClearSelection();
+                    dnnComboBox.FindItemByValue("").Selected = true;
 
+                }
+            }
+            else if (ReferenceEquals(control.GetType(), typeof(RadioButtonList)))
+            {
+                var dnnRadioList = (RadioButtonList)control;
+                if (!string.IsNullOrEmpty(Convert.ToString(tabSettings[tabSettingsKey])))
+                {
+                    dnnRadioList.ClearSelection();
+                    dnnRadioList.Items.FindByValue(tabSettings[tabSettingsKey].ToString()).Selected = true;
+                }
+                else
+                {
+                    dnnRadioList.ClearSelection();
                 }
             }
         }
@@ -1519,6 +1562,11 @@ namespace DotNetNuke.Modules.Admin.Tabs
                 {
                     cancelHyperLink.NavigateUrl = Request.QueryString["returnurl"];
                 }
+
+                if (ctlAudit.Visible)
+                {
+                    ctlAudit.Entity = Tab;
+                }
             }
             catch (Exception exc)
             {
@@ -1685,13 +1733,18 @@ namespace DotNetNuke.Modules.Admin.Tabs
 
             var urlPath = url.TrimStart('/');
             bool modified;
+
+	        var friendlyUrlSettings = new DotNetNuke.Entities.Urls.FriendlyUrlSettings(PortalSettings.PortalId);
+	        urlPath = UrlRewriterUtils.CleanExtension(urlPath, friendlyUrlSettings, string.Empty);
+
             //Clean Url
-            var options = UrlRewriterUtils.ExtendOptionsForCustomURLs( UrlRewriterUtils.GetOptionsFromSettings(new DotNetNuke.Entities.Urls.FriendlyUrlSettings(PortalSettings.PortalId)) );
+			var options = UrlRewriterUtils.ExtendOptionsForCustomURLs(UrlRewriterUtils.GetOptionsFromSettings(friendlyUrlSettings));
             urlPath = FriendlyUrlController.CleanNameForUrl(urlPath, options, out modified);
             if (modified)
             {
                 ShowWarningMessage(Localization.GetString("UrlPathCleaned.Error", LocalResourceFile));
                 urlTextBox.Text = '/' + urlPath;
+                urlTextBox.CssClass += " um-page-url-modified";
                 return false;
             }
 
@@ -1706,13 +1759,14 @@ namespace DotNetNuke.Modules.Admin.Tabs
             {
                 ShowWarningMessage(Localization.GetString("UrlPathNotUnique.Error", LocalResourceFile));
                 urlTextBox.Text = '/' + urlPath;
+                urlTextBox.CssClass += " um-page-url-modified";
                 return false;
             }
 
             //update the text field with update value, because space char may replaced but the modified flag will not change to true.
             //in this case we should update the value back so that it can create tab with new path.
             urlTextBox.Text = '/' + urlPath;
-
+            urlTextBox.CssClass = urlTextBox.CssClass.Replace(" um-page-url-modified", string.Empty);
             return true;
         }
 
@@ -1739,7 +1793,10 @@ namespace DotNetNuke.Modules.Admin.Tabs
 
                     if (tabId != Null.NullInteger)
                     {
-                        var newCookie = new HttpCookie("LastPageId", string.Format("{0}:{1}", PortalSettings.PortalId, tabId));
+                        var newCookie = new HttpCookie("LastPageId", string.Format("{0}:{1}", PortalSettings.PortalId, tabId))
+                        {
+                            Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/")
+                        };
                         Response.Cookies.Add(newCookie);
 
                         if (PortalSettings.UserMode != PortalSettings.Mode.Edit)
@@ -1884,11 +1941,22 @@ namespace DotNetNuke.Modules.Admin.Tabs
         {
             CLControl1.SaveData();
 
-            // saved data may have impact on current page, so we need to reload the current controls
-            BindTab();
+            var returnPath = Globals.NavigateURL();
 
-            // reload localization control
-            BindCLControl();
+            if (Request.QueryString["returntabid"] != null)
+            {
+                // return to admin tab
+                var navigateUrl = Globals.NavigateURL(Convert.ToInt32(Request.QueryString["returntabid"]));
+                // add location hash to let it select in admin tab intially
+                var hash = "#" + (Tab.PortalID == Null.NullInteger ? "H" : "P") + "&" + Tab.TabID;
+                returnPath = navigateUrl + hash;
+            }
+            else if (!string.IsNullOrEmpty(UrlUtils.ValidReturnUrl(Request.QueryString["returnurl"])))
+            {
+                returnPath = Request.QueryString["returnurl"];
+            }
+            Response.Redirect(returnPath);
+         
         }
 
 

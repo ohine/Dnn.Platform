@@ -25,7 +25,6 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Linq;
-using System.Web;
 
 using DotNetNuke.Common;
 using DotNetNuke.ExtensionPoints.Filters;
@@ -76,7 +75,7 @@ namespace DotNetNuke.ExtensionPoints
             var catalog = new AggregateCatalog();
             var path = Path.Combine(Globals.ApplicationMapPath, "bin");
             catalog.Catalogs.Add(new SafeDirectoryCatalog(path));
-            return new CompositionContainer(catalog, true);
+            return new CompositionContainer(catalog, true);            
         }
 
         public static void ComposeParts(params object[] attributeParts)

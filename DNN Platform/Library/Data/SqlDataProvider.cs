@@ -129,19 +129,19 @@ namespace DotNetNuke.Data
                         Logger.Trace("Executing SQL Script " + query);
 
                         //Create a new connection
-                        var connection = new SqlConnection(connectionString);
-                        //Create a new command (with no timeout)
-                        var command = new SqlCommand(query, connection) { CommandTimeout = 0 };
+                        using (var connection = new SqlConnection(connectionString))
+                        {
+                            //Create a new command (with no timeout)
+                            var command = new SqlCommand(query, connection) { CommandTimeout = 0 };
 
-                        connection.Open();
-                        command.ExecuteNonQuery();
-                        connection.Close();
-
+                            connection.Open();
+                            command.ExecuteNonQuery();
+                            connection.Close();
+                        }
                     }
                     catch (SqlException objException)
                     {
-                        Logger.Debug(objException);
-
+                        Logger.Error(objException);
                         exceptions += objException + Environment.NewLine + Environment.NewLine + query + Environment.NewLine + Environment.NewLine;
                     }
                 }
@@ -166,14 +166,14 @@ namespace DotNetNuke.Data
             catch (SqlException sqlException)
             {
                 //error in SQL query
-                Logger.Debug(sqlException);
+                Logger.Error(sqlException);
 
                 errorMessage = sqlException.Message + Environment.NewLine + Environment.NewLine + sql + Environment.NewLine + Environment.NewLine;
                 return null;
             }
             catch (Exception ex)
             {
-                Logger.Debug(ex);
+                Logger.Error(ex);
                 errorMessage = ex + Environment.NewLine + Environment.NewLine + sql + Environment.NewLine + Environment.NewLine;
                 return null;
             }
@@ -236,7 +236,7 @@ namespace DotNetNuke.Data
             }
             catch (SqlException objException)
             {
-                Logger.Debug(objException);
+                Logger.Error(objException);
 
                 Exceptions += objException + Environment.NewLine + Environment.NewLine + SQL + Environment.NewLine + Environment.NewLine;
             }
@@ -286,7 +286,7 @@ namespace DotNetNuke.Data
             }
             catch (SqlException objException)
             {
-                Logger.Debug(objException);
+                Logger.Error(objException);
 
                 Exceptions += objException + Environment.NewLine + Environment.NewLine + SQL + Environment.NewLine + Environment.NewLine;
             }
@@ -358,7 +358,7 @@ namespace DotNetNuke.Data
                 }
                 catch (SqlException objException)
                 {
-                    Logger.Debug(objException);
+                    Logger.Error(objException);
 
                     exceptions += objException + Environment.NewLine + Environment.NewLine + script + Environment.NewLine + Environment.NewLine;
                 }
@@ -374,7 +374,7 @@ namespace DotNetNuke.Data
                 }
                 catch (SqlException objException)
                 {
-                    Logger.Debug(objException);
+                    Logger.Error(objException);
 
                     exceptions += objException + Environment.NewLine + Environment.NewLine + script + Environment.NewLine + Environment.NewLine;
                 }

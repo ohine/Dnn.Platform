@@ -22,9 +22,12 @@
 #endregion
 
 using System;
+using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using DotNetNuke.Collections;
 using DotNetNuke.ComponentModel.DataAnnotations;
 
 namespace DotNetNuke.Data
@@ -113,14 +116,25 @@ namespace DotNetNuke.Data
         {
             var sb = new StringBuilder(";Exec ");
             sb.Append(procedureName);
-            for (int i = 0; i < args.Count(); i++)
+            for (int i = 0; i < args.Length; i++)
             {
-                sb.Append(String.Format(" @{0}", i));
-                if (i < args.Count() - 1)
+                var parameterFormat = " @{0}";
+                string parameterName = null;
+                var param = args[i] as IDataParameter;
+                if (param != null)
+                {
+                    // intentionally adding an extra @ before parameter name, so PetaPoco won't try to match it to a passed-in arg
+                    parameterFormat = " @{1}=@{0}";
+                    parameterName = param.ParameterName;
+                }
+
+                sb.AppendFormat(CultureInfo.InvariantCulture, parameterFormat, i, parameterName);
+                if (i < args.Length - 1)
                 {
                     sb.Append(",");
                 }
             }
+
             return sb.ToString();
         }
 
@@ -144,7 +158,8 @@ namespace DotNetNuke.Data
 
         internal static string ReplaceTokens(string sql)
         {
-            return sql.Replace("{databaseOwner}", DataProvider.Instance().DatabaseOwner)
+            var isSqlCe = DataProvider.Instance().Settings.GetValueOrDefault("isSqlCe", false);
+            return sql.Replace("{databaseOwner}", (isSqlCe) ? String.Empty : DataProvider.Instance().DatabaseOwner)
                         .Replace("{objectQualifier}", DataProvider.Instance().ObjectQualifier);
         }
 

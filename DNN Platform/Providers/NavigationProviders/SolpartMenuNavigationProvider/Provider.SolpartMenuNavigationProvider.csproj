@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
   <PropertyGroup>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
@@ -8,7 +8,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <AssemblyName>DotNetNuke.SolpartMenuNavigationProvider</AssemblyName>
     <OutputType>Library</OutputType>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <RootNamespace>DotNetNuke.SolpartMenuNavigationProvider</RootNamespace>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -37,6 +37,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>1591</NoWarn>
     <LangVersion>default</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\</OutputPath>
@@ -48,6 +49,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>1591</NoWarn>
     <Optimize>true</Optimize>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetNuke.WebControls, Version=2.2.0.7, Culture=neutral, processorArchitecture=MSIL">

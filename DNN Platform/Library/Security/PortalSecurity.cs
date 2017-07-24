@@ -23,7 +23,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -39,10 +39,10 @@ using DotNetNuke.Entities.Controllers;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Entities.Users;
+using DotNetNuke.Entities.Users.Social;
 using DotNetNuke.Security.Membership;
 using DotNetNuke.Security.Permissions;
 using DotNetNuke.Services.Cryptography;
-using DotNetNuke.Services.Personalization;
 
 #endregion
 
@@ -50,6 +50,10 @@ namespace DotNetNuke.Security
 {
     public class PortalSecurity
     {
+        private const string RoleFriendPrefix = "FRIEND:";
+        private const string RoleFollowerPrefix = "FOLLOWER:";
+        private const string RoleOwnerPrefix = "OWNER:";
+
         #region FilterFlag enum
 
         ///-----------------------------------------------------------------------------
@@ -92,8 +96,127 @@ namespace DotNetNuke.Security
         }
 
         #endregion
-		
-		#region Private Methods
+
+        #region private enum
+        enum RoleType
+        {
+            Security,
+            Friend,
+            Follower,
+            Owner
+        }
+        #endregion
+
+        #region Private Methods
+
+        private static void ProcessRole(UserInfo user, PortalSettings settings, string roleName, out bool? roleAllowed)
+        {
+            var roleType = GetRoleType(roleName);
+            switch (roleType)
+            {
+                case RoleType.Friend:
+                    ProcessFriendRole(user, roleName, out roleAllowed);
+                    break;
+                case RoleType.Follower:
+                    ProcessFollowerRole(user, roleName, out roleAllowed);
+                    break;
+                case RoleType.Owner:
+                    ProcessOwnerRole(user, roleName, out roleAllowed);
+                    break;
+                default:
+                    ProcessSecurityRole(user, settings, roleName, out roleAllowed);
+                    break;
+            }
+        }
+
+        private static void ProcessFriendRole(UserInfo user, string roleName, out bool? roleAllowed)
+        {
+            roleAllowed = null;
+            var targetUser = UserController.Instance.GetUserById(user.PortalID, GetEntityFromRoleName(roleName));
+            var relationShip = RelationshipController.Instance.GetFriendRelationship(user, targetUser);
+            if (relationShip != null && relationShip.Status == RelationshipStatus.Accepted)
+            {
+                roleAllowed = true;
+            }
+        }
+
+        private static void ProcessFollowerRole(UserInfo user, string roleName, out bool? roleAllowed)
+        {
+            roleAllowed = null;
+            var targetUser = UserController.Instance.GetUserById(user.PortalID, GetEntityFromRoleName(roleName));
+            var relationShip = RelationshipController.Instance.GetFollowerRelationship(user, targetUser);
+            if (relationShip != null && relationShip.Status == RelationshipStatus.Accepted)
+            {
+                roleAllowed = true;
+            }
+        }
+
+        private static void ProcessOwnerRole(UserInfo user, string roleName, out bool? roleAllowed)
+        {
+            roleAllowed = null;
+            var entityId = GetEntityFromRoleName(roleName);
+            if (entityId == user.UserID)
+            {
+                roleAllowed = true;
+            }
+        }
+
+        private static int GetEntityFromRoleName(string roleName)
+        {
+            var roleParts = roleName.Split(':');
+            int result;
+            if (roleParts.Length > 1 && Int32.TryParse(roleParts[1], out result))
+            {
+                return result;
+            }
+            return Null.NullInteger;
+        }
+
+        private static void ProcessSecurityRole(UserInfo user, PortalSettings settings, string roleName, out bool? roleAllowed)
+        {
+            roleAllowed = null;
+            //permissions strings are encoded with Deny permissions at the beginning and Grant permissions at the end for optimal performance
+            if (!String.IsNullOrEmpty(roleName))
+            {
+                //Deny permission
+                if (roleName.StartsWith("!"))
+                {
+                    //Portal Admin cannot be denied from his/her portal (so ignore deny permissions if user is portal admin)
+                    if (settings != null && !(settings.PortalId == user.PortalID && settings.AdministratorId == user.UserID))
+                    {
+                        string denyRole = roleName.Replace("!", "");
+                        if (denyRole == Globals.glbRoleAllUsersName || user.IsInRole(denyRole))
+                        {
+                            roleAllowed = false;
+                        }
+                    }
+                }
+                else //Grant permission
+                {
+                    if (roleName == Globals.glbRoleAllUsersName || user.IsInRole(roleName))
+                    {
+                        roleAllowed = true;
+                    }
+                }
+            }            
+        }
+
+        private static RoleType GetRoleType(string roleName)
+        {
+            if (roleName.ToUpper(CultureInfo.InvariantCulture).StartsWith(RoleFriendPrefix))
+            {
+                return RoleType.Friend;
+            }
+            if (roleName.ToUpper(CultureInfo.InvariantCulture).StartsWith(RoleFollowerPrefix))
+            {
+                return RoleType.Follower;
+            }
+            if (roleName.ToUpper(CultureInfo.InvariantCulture).StartsWith(RoleOwnerPrefix))
+            {
+                return RoleType.Owner;
+            }
+            return RoleType.Security;
+        }
 
         private string BytesToHexString(byte[] bytes)
         {
@@ -124,7 +247,7 @@ namespace DotNetNuke.Security
         private string FilterStrings(string strInput)
         {
 			//setup up list of search terms as items may be used twice
-            string TempInput = strInput;
+            var tempInput = strInput;
             var listStrings = new List<string>
                                   {
                                       "<script[^>]*>.*?</script[^><]*>",
@@ -156,20 +279,20 @@ namespace DotNetNuke.Security
             const string replacement = " ";
 
             //check if text contains encoded angle brackets, if it does it we decode it to check the plain text
-            if (TempInput.Contains("&gt;") && TempInput.Contains("&lt;"))
+            if (tempInput.Contains("&gt;") && tempInput.Contains("&lt;"))
             {
 				//text is encoded, so decode and try again
-                TempInput = HttpUtility.HtmlDecode(TempInput);
-                TempInput = listStrings.Aggregate(TempInput, (current, s) => Regex.Replace(current, s, replacement, options));
+                tempInput = HttpUtility.HtmlDecode(tempInput);
+                tempInput = listStrings.Aggregate(tempInput, (current, s) => Regex.Replace(current, s, replacement, options));
 
                 //Re-encode
-                TempInput = HttpUtility.HtmlEncode(TempInput);
+                tempInput = HttpUtility.HtmlEncode(tempInput);
             }
             else
             {
-                TempInput = listStrings.Aggregate(TempInput, (current, s) => Regex.Replace(current, s, replacement, options));
+                tempInput = listStrings.Aggregate(tempInput, (current, s) => Regex.Replace(current, s, replacement, options));
             }
-            return TempInput;
+            return tempInput;
         }
 
         ///-----------------------------------------------------------------------------
@@ -186,9 +309,13 @@ namespace DotNetNuke.Security
         ///-----------------------------------------------------------------------------
         private string FormatDisableScripting(string strInput)
         {
-            string TempInput = strInput;
-            TempInput = FilterStrings(TempInput);
-            return TempInput;
+            var tempInput = strInput;
+            if (strInput==" " || String.IsNullOrEmpty(strInput))
+            {
+                return tempInput; 
+            }
+            tempInput = FilterStrings(tempInput); 
+            return tempInput;
         }
 
         ///-----------------------------------------------------------------------------
@@ -206,9 +333,9 @@ namespace DotNetNuke.Security
         ///-----------------------------------------------------------------------------
         private string FormatAngleBrackets(string strInput)
         {
-            string TempInput = strInput.Replace("<", "");
-            TempInput = TempInput.Replace(">", "");
-            return TempInput;
+            var tempInput = strInput.Replace("<", "");
+            tempInput = tempInput.Replace(">", "");
+            return tempInput;
         }
 
         ///-----------------------------------------------------------------------------
@@ -240,7 +367,8 @@ namespace DotNetNuke.Security
         ///-----------------------------------------------------------------------------
         private string FormatRemoveSQL(string strSQL)
         {
-            const string BadStatementExpression = ";|--|create|drop|select|insert|delete|update|union|sp_|xp_|exec|/\\*.*\\*/|declare|waitfor|%|&";
+            // Check for forbidden T-SQL commands. Use word boundaries to filter only real statements.
+            const string BadStatementExpression = ";|--|\bcreate\b|\bdrop\b|\bselect\b|\binsert\b|\bdelete\b|\bupdate\b|\bunion\b|sp_|xp_|\bexec\b|\bexecute\b|/\\*.*\\*/|\bdeclare\b|\bwaitfor\b|%|&";
             return Regex.Replace(strSQL, BadStatementExpression, " ", RegexOptions.IgnoreCase | RegexOptions.Compiled).Replace("'", "''");
         }
 
@@ -390,19 +518,19 @@ namespace DotNetNuke.Security
                     {
                         case FilterScope.SystemList:
                             listEntryHostInfos = listController.GetListEntryInfoItems(listName, "", Null.NullInteger);
-                            inputString = listEntryHostInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + removeItem.Text + @"\b", removeItem.Value, options));
+                            inputString = listEntryHostInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + Regex.Escape(removeItem.Text) + @"\b", removeItem.Value, options));
                             break;
                         case FilterScope.SystemAndPortalList:
                             settings = PortalController.Instance.GetCurrentPortalSettings();
                             listEntryHostInfos = listController.GetListEntryInfoItems(listName, "", Null.NullInteger);
                             listEntryPortalInfos = listController.GetListEntryInfoItems(listName + "-" + settings.PortalId, "", settings.PortalId);
-                            inputString = listEntryHostInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + removeItem.Text + @"\b", removeItem.Value, options));
-                            inputString = listEntryPortalInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + removeItem.Text + @"\b", removeItem.Value, options));
+                            inputString = listEntryHostInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + Regex.Escape(removeItem.Text) + @"\b", removeItem.Value, options));
+                            inputString = listEntryPortalInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + Regex.Escape(removeItem.Text) + @"\b", removeItem.Value, options));
                             break;
                         case FilterScope.PortalList:
                             settings = PortalController.Instance.GetCurrentPortalSettings();
                             listEntryPortalInfos = listController.GetListEntryInfoItems(listName + "-" + settings.PortalId, "", settings.PortalId);
-                            inputString = listEntryPortalInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + removeItem.Text + @"\b", removeItem.Value, options));
+                            inputString = listEntryPortalInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + Regex.Escape(removeItem.Text) + @"\b", removeItem.Value, options));
                             break;
                     }
                     break;
@@ -451,19 +579,19 @@ namespace DotNetNuke.Security
                     {
                         case FilterScope.SystemList:
                             listEntryHostInfos = listController.GetListEntryInfoItems(listName, "", Null.NullInteger);
-                            inputString = listEntryHostInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + removeItem.Text + @"\b", string.Empty, options));
+                            inputString = listEntryHostInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + Regex.Escape(removeItem.Text) + @"\b", string.Empty, options));
                             break;
                         case FilterScope.SystemAndPortalList:
                             settings = PortalController.Instance.GetCurrentPortalSettings();
                             listEntryHostInfos = listController.GetListEntryInfoItems(listName, "", Null.NullInteger);
                             listEntryPortalInfos = listController.GetListEntryInfoItems(listName + "-" + settings.PortalId, "", settings.PortalId);
-                            inputString = listEntryHostInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + removeItem.Text + @"\b", string.Empty, options));
-                            inputString = listEntryPortalInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + removeItem.Text + @"\b", string.Empty, options));
+                            inputString = listEntryHostInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + Regex.Escape(removeItem.Text) + @"\b", string.Empty, options));
+                            inputString = listEntryPortalInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + Regex.Escape(removeItem.Text) + @"\b", string.Empty, options));
                             break;
                         case FilterScope.PortalList:
                             settings = PortalController.Instance.GetCurrentPortalSettings();
                             listEntryPortalInfos = listController.GetListEntryInfoItems(listName + "-" + settings.PortalId, "", settings.PortalId);
-                            inputString = listEntryPortalInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + removeItem.Text + @"\b", string.Empty, options));        
+                            inputString = listEntryPortalInfos.Aggregate(inputString, (current, removeItem) => Regex.Replace(current, @"\b" + Regex.Escape(removeItem.Text) + @"\b", string.Empty, options));        
                             break;
                     }
 
@@ -484,9 +612,9 @@ namespace DotNetNuke.Security
                 //Create a custom auth cookie
 
                 //first, create the authentication ticket     
-                FormsAuthenticationTicket authenticationTicket = createPersistentCookie
-                                                                     ? new FormsAuthenticationTicket(user.Username, true, Config.GetPersistentCookieTimeout())
-                                                                     : new FormsAuthenticationTicket(user.Username, false, Config.GetAuthCookieTimeout());
+                var authenticationTicket = createPersistentCookie
+                    ? new FormsAuthenticationTicket(user.Username, true, Config.GetPersistentCookieTimeout())
+                    : new FormsAuthenticationTicket(user.Username, false, Config.GetAuthCookieTimeout());
 
                 //encrypt it     
                 var encryptedAuthTicket = FormsAuthentication.Encrypt(authenticationTicket);
@@ -521,18 +649,18 @@ namespace DotNetNuke.Security
             {
                 FormsAuthentication.SetAuthCookie(user.Username, false);
             }
+
             if (user.IsSuperUser)
             {
                 //save userinfo object in context to ensure Personalization is saved correctly
                 HttpContext.Current.Items["UserInfo"] = user;
-
                 HostController.Instance.Update(String.Format("GettingStarted_Display_{0}", user.UserID), "true");
             }
         }
 
         public void SignOut()
         {
-			//Log User Off from Cookie Authentication System
+            //Log User Off from Cookie Authentication System
             var domainCookie = HttpContext.Current.Request.Cookies["SiteGroup"];
             if (domainCookie == null)
             {
@@ -545,35 +673,35 @@ namespace DotNetNuke.Security
                 var domain = domainCookie.Value;
 
                 //Create a new Cookie
-                string str = String.Empty;
+                var str = String.Empty;
                 if (HttpContext.Current.Request.Browser["supportsEmptyStringInCookieValue"] == "false")
                 {
                     str = "NoCookie";
                 }
 
                 var authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, str)
-                                    {
-                                        Expires = new DateTime(1999, 1, 1),
-                                        Domain = domain,
-                                        Path = FormsAuthentication.FormsCookiePath,
-                                        Secure = FormsAuthentication.RequireSSL
-                    
-                                    };
+                {
+                    Expires = new DateTime(1999, 1, 1),
+                    Domain = domain,
+                    Path = FormsAuthentication.FormsCookiePath,
+                    Secure = FormsAuthentication.RequireSSL
+
+                };
 
                 HttpContext.Current.Response.Cookies.Set(authCookie);
 
                 var siteGroupCookie = new HttpCookie("SiteGroup", str)
-                                    {
-                                        Expires = new DateTime(1999, 1, 1),
-                                        Domain = domain,
-                                        Path = FormsAuthentication.FormsCookiePath,
-                                        Secure = FormsAuthentication.RequireSSL
-                                    };
+                {
+                    Expires = new DateTime(1999, 1, 1),
+                    Domain = domain,
+                    Path = FormsAuthentication.FormsCookiePath,
+                    Secure = FormsAuthentication.RequireSSL
+                };
 
                 HttpContext.Current.Response.Cookies.Set(siteGroupCookie);
             }
 
-			//Remove current userinfo from context items
+            //Remove current userinfo from context items
 			HttpContext.Current.Items.Remove("UserInfo");
 
             //remove language cookie
@@ -591,20 +719,20 @@ namespace DotNetNuke.Security
             }
 
             //expire cookies
-            var httpCookie1 = HttpContext.Current.Response.Cookies["portalaliasid"];
-            if (httpCookie1 != null)
+            cookie = HttpContext.Current.Response.Cookies["portalaliasid"];
+            if (cookie != null)
             {
-                httpCookie1.Value = null;
-                httpCookie1.Path = "/";
-                httpCookie1.Expires = DateTime.Now.AddYears(-30);
+                cookie.Value = null;
+				cookie.Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/");
+                cookie.Expires = DateTime.Now.AddYears(-30);
             }
 
-            var cookie1 = HttpContext.Current.Response.Cookies["portalroles"];
-            if (cookie1 != null)
+            cookie = HttpContext.Current.Response.Cookies["portalroles"];
+            if (cookie != null)
             {
-                cookie1.Value = null;
-                cookie1.Path = "/";
-                cookie1.Expires = DateTime.Now.AddYears(-30);
+                cookie.Value = null;
+				cookie.Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/");
+                cookie.Expires = DateTime.Now.AddYears(-30);
             }
 
             //clear any authentication provider tokens that match *UserToken convention e.g FacebookUserToken ,TwitterUserToken, LiveUserToken and GoogleUserToken
@@ -617,7 +745,7 @@ namespace DotNetNuke.Security
                     if (auth != null)
                     {
                         auth.Value = null;
-                        auth.Path = "/";
+						auth.Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/");
                         auth.Expires = DateTime.Now.AddYears(-30);
                     }
                 }
@@ -648,23 +776,23 @@ namespace DotNetNuke.Security
         public static void ForceSecureConnection()
         {
 			//get current url
-            string URL = HttpContext.Current.Request.Url.ToString();
+            var url = HttpContext.Current.Request.Url.ToString();
 			//if unsecure connection
-            if (URL.StartsWith("http://"))
+            if (url.StartsWith("http://"))
             {
 				//switch to secure connection
-                URL = URL.Replace("http://", "https://");
+                url = url.Replace("http://", "https://");
                 //append ssl parameter to querystring to indicate secure connection processing has already occurred
-                if (URL.IndexOf("?", StringComparison.Ordinal) == -1)
+                if (url.IndexOf("?", StringComparison.Ordinal) == -1)
                 {
-                    URL = URL + "?ssl=1";
+                    url = url + "?ssl=1";
                 }
                 else
                 {
-                    URL = URL + "&ssl=1";
+                    url = url + "&ssl=1";
                 }
                 //redirect to secure connection
-                HttpContext.Current.Response.Redirect(URL, true);
+                HttpContext.Current.Response.Redirect(url, true);
             }
         }
 
@@ -727,7 +855,7 @@ namespace DotNetNuke.Security
                         if (role.StartsWith("!"))
                         {
                             //Portal Admin cannot be denied from his/her portal (so ignore deny permissions if user is portal admin)
-                            if (!(settings.PortalId == objUserInfo.PortalID && settings.AdministratorId == objUserInfo.UserID))
+                            if (settings != null && !(settings.PortalId == objUserInfo.PortalID && settings.AdministratorId == objUserInfo.UserID))
                             {
                                 string denyRole = role.Replace("!", "");
                                 if (denyRole == Globals.glbRoleAllUsersName || objUserInfo.IsInRole(denyRole))
@@ -752,7 +880,7 @@ namespace DotNetNuke.Security
             {
                 return true;
             }
-            return objUserInfo.IsInRole(role);
+            return IsInRoles(objUserInfo, PortalController.Instance.GetCurrentPortalSettings(), role);
         }
 
         public static bool IsInRoles(string roles)
@@ -770,40 +898,42 @@ namespace DotNetNuke.Security
             if (!isInRoles)
             {
                 if (roles != null)
-                {
-                    //permissions strings are encoded with Deny permissions at the beginning and Grant permissions at the end for optimal performance
+                {                    
                     foreach (string role in roles.Split(new[] { ';' }))
                     {
-                        if (!String.IsNullOrEmpty(role))
+                        bool? roleAllowed;
+                        ProcessRole(objUserInfo, settings, role, out roleAllowed);
+                        if (roleAllowed.HasValue)
                         {
-                            //Deny permission
-                            if (role.StartsWith("!"))
-                            {
-                                //Portal Admin cannot be denied from his/her portal (so ignore deny permissions if user is portal admin)
-                                if (!(settings.PortalId == objUserInfo.PortalID && settings.AdministratorId == objUserInfo.UserID))
-                                {
-                                    string denyRole = role.Replace("!", "");
-                                    if (denyRole == Globals.glbRoleAllUsersName || objUserInfo.IsInRole(denyRole))
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                            else //Grant permission
-                            {
-                                if (role == Globals.glbRoleAllUsersName || objUserInfo.IsInRole(role))
-                                {
-                                    isInRoles = true;
-                                    break;
-                                }
-                            }
+                            isInRoles = roleAllowed.Value;
+                            break;
                         }
                     }
                 }
             }
-            return isInRoles;
+            return isInRoles; 
         }
-		
+
+        public static bool IsFriend(int userId)
+        {
+            UserInfo objUserInfo = UserController.Instance.GetCurrentUserInfo();
+            PortalSettings settings = PortalController.Instance.GetCurrentPortalSettings();
+            return IsInRoles(objUserInfo, settings, RoleFriendPrefix + userId);
+        }
+
+        public static bool IsFollower(int userId)
+        {
+            UserInfo objUserInfo = UserController.Instance.GetCurrentUserInfo();
+            PortalSettings settings = PortalController.Instance.GetCurrentPortalSettings();
+            return IsInRoles(objUserInfo, settings, RoleFollowerPrefix + userId);
+        }
+
+        public static bool IsOwner(int userId)
+        {
+            UserInfo objUserInfo = UserController.Instance.GetCurrentUserInfo();
+            PortalSettings settings = PortalController.Instance.GetCurrentPortalSettings();
+            return IsInRoles(objUserInfo, settings, RoleOwnerPrefix + userId);
+        }
 		#endregion
 		
 		#region Obsoleted Methods, retained for Binary Compatability
@@ -815,7 +945,7 @@ namespace DotNetNuke.Security
             if (httpCookie != null)
             {
                 httpCookie.Value = null;
-                httpCookie.Path = "/";
+                httpCookie.Path = Globals.ApplicationPath;
                 httpCookie.Expires = DateTime.Now.AddYears(-30);
             }
         }
@@ -878,5 +1008,5 @@ namespace DotNetNuke.Security
         }
 		
 		#endregion
-    }
+    }    
 }

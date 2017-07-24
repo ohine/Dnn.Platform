@@ -44,6 +44,7 @@ using System.Xml;
 using DotNetNuke.Application;
 using DotNetNuke.Collections.Internal;
 using DotNetNuke.Common.Internal;
+using DotNetNuke.Common.Lists;
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.Data;
 using DotNetNuke.Entities;
@@ -60,7 +61,6 @@ using DotNetNuke.Instrumentation;
 using DotNetNuke.Security;
 using DotNetNuke.Security.Permissions;
 using DotNetNuke.Security.Roles;
-using DotNetNuke.Security.Roles.Internal;
 using DotNetNuke.Services.Cache;
 using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.FileSystem;
@@ -257,16 +257,16 @@ namespace DotNetNuke.Common
         public const string glbDefaultControlPanel = "Admin/ControlPanel/IconBar.ascx";
 
         /// <summary>
+        /// Default setting to determine if selected control panel is loaded to evaluate visibility
+        /// </summary>
+        /// <value>false</value>
+        public const bool glbAllowControlPanelToDetermineVisibility = false;
+
+        /// <summary>
         /// Default pane name
         /// </summary>
         /// <value>ContentPane</value>
         public const string glbDefaultPane = "ContentPane";
-
-        /// <summary>
-        /// Image file types
-        /// </summary>
-        /// <value>jpg,jpeg,jpe,gif,bmp,png,swf</value>
-        public const string glbImageFileTypes = "jpg,jpeg,jpe,gif,bmp,png";
 
         /// <summary>
         /// Config files folder
@@ -608,18 +608,19 @@ namespace DotNetNuke.Common
                     }
                     else
                     {
-                        if (DotNetNukeContext.Current.Application.Version.Major > DataBaseVersion.Major)
+                        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                        if (version.Major > DataBaseVersion.Major)
                         {
                             //Upgrade Required (Major Version Upgrade)
                             tempStatus = UpgradeStatus.Upgrade;
                         }
-                        else if (DotNetNukeContext.Current.Application.Version.Major == DataBaseVersion.Major && DotNetNukeContext.Current.Application.Version.Minor > DataBaseVersion.Minor)
+                        else if (version.Major == DataBaseVersion.Major && version.Minor > DataBaseVersion.Minor)
                         {
                             //Upgrade Required (Minor Version Upgrade)
                             tempStatus = UpgradeStatus.Upgrade;
                         }
-                        else if (DotNetNukeContext.Current.Application.Version.Major == DataBaseVersion.Major && DotNetNukeContext.Current.Application.Version.Minor == DataBaseVersion.Minor &&
-                                 DotNetNukeContext.Current.Application.Version.Build > DataBaseVersion.Build)
+                        else if (version.Major == DataBaseVersion.Major && version.Minor == DataBaseVersion.Minor &&
+                                 version.Build > DataBaseVersion.Build)
                         {
                             //Upgrade Required (Build Version Upgrade)
                             tempStatus = UpgradeStatus.Upgrade;
@@ -776,6 +777,25 @@ namespace DotNetNuke.Common
 
             return cultureCode;
         }
+
+        /// <summary>
+        /// Image file types
+        /// </summary>
+        /// <value>Values read from ImageTypes List. If there is not List, default values will be jpg,jpeg,jpe,gif,bmp,png,swf</value>
+        public static string glbImageFileTypes
+        {
+            get
+            {
+                var listController = new ListController();
+                var listEntries = listController.GetListEntryInfoItems("ImageTypes");
+                if (listEntries == null || listEntries.Count() == 0)
+                {
+                    return "jpg,jpeg,jpe,gif,bmp,png";
+                }
+                return String.Join(",", listEntries.Select(l => l.Value));
+            }
+        }
+
 
         /// <summary>
         /// Builds the cross tab dataset.
@@ -1848,7 +1868,8 @@ namespace DotNetNuke.Common
         /// -----------------------------------------------------------------------------
         public static bool IsEditMode()
         {
-            return (TabPermissionController.CanAddContentToPage() && PortalController.Instance.GetCurrentPortalSettings().UserMode == PortalSettings.Mode.Edit);
+            return PortalController.Instance.GetCurrentPortalSettings().UserMode == PortalSettings.Mode.Edit &&
+                TabPermissionController.CanAddContentToPage();
         }
 
         /// -----------------------------------------------------------------------------
@@ -2211,7 +2232,19 @@ namespace DotNetNuke.Common
         /// <param name="strRoot">The root.</param>
         public static void DeleteFolderRecursive(string strRoot)
         {
-            FileSystemUtils.DeleteFolderRecursive(strRoot);
+            if (String.IsNullOrEmpty(strRoot) || !Directory.Exists(strRoot))
+            {
+                return;
+            }
+            foreach (var strFolder in Directory.GetDirectories(strRoot))
+            {
+                DeleteFolderRecursive(strFolder);
+            }
+            foreach (var strFile in Directory.GetFiles(strRoot))
+            {
+                DeleteFile(strFile);
+            }
+            DeleteFolder(strRoot);
         }
 
         /// <summary>
@@ -2221,7 +2254,59 @@ namespace DotNetNuke.Common
         /// <param name="filter">The filter.</param>
         public static void DeleteFilesRecursive(string strRoot, string filter)
         {
-            FileSystemUtils.DeleteFilesRecursive(strRoot, filter);
+            if (String.IsNullOrEmpty(strRoot) || !Directory.Exists(strRoot))
+            {
+                return;
+            }
+            foreach (var strFolder in Directory.GetDirectories(strRoot))
+            {
+                var directory = new DirectoryInfo(strFolder);
+                if ((directory.Attributes & FileAttributes.Hidden) == 0 && (directory.Attributes & FileAttributes.System) == 0)
+                {
+                    DeleteFilesRecursive(strFolder, filter);
+                }
+            }
+            foreach (var strFile in Directory.GetFiles(strRoot, "*" + filter))
+            {
+                DeleteFile(strFile);
+            }
+        }
+
+        private static void DeleteFile(string filePath)
+        {
+            try
+            {
+                FileSystemUtils.DeleteFile(filePath);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+        }
+        
+        private static void DeleteFolder(string strRoot)
+        {
+            try
+            {
+                Directory.Delete(strRoot);
+            }
+            catch (IOException)
+            {
+                //Force Deletion. Directory should be empty
+                try
+                {
+                    Thread.Sleep(50);
+                    Directory.Delete(strRoot, true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                    }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
         }
 
         /// <summary>
@@ -2496,15 +2581,12 @@ namespace DotNetNuke.Common
         public static string ApplicationURL()
         {
             PortalSettings _portalSettings = PortalController.Instance.GetCurrentPortalSettings();
-            if (_portalSettings != null)
+            if (_portalSettings != null && _portalSettings.ActiveTab.HasAVisibleVersion)
             {
                 return (ApplicationURL(_portalSettings.ActiveTab.TabID));
             }
-            else
-            {
                 return (ApplicationURL(-1));
             }
-        }
 
         /// -----------------------------------------------------------------------------
         /// <summary>
@@ -3374,9 +3456,9 @@ namespace DotNetNuke.Common
             switch (Convert.ToString(RoleID))
             {
                 case glbRoleAllUsers:
-                    return "All Users";
+                    return glbRoleAllUsersName;
                 case glbRoleUnauthUser:
-                    return "Unauthenticated Users";
+                    return glbRoleUnauthUserName;
             }
             Hashtable htRoles = null;
             if (Host.PerformanceSetting != PerformanceSettings.NoCaching)
@@ -3752,9 +3834,35 @@ namespace DotNetNuke.Common
         /// </remarks>
         public static string UserProfilePicRelativeUrl()
         {
+            return UserProfilePicRelativeUrl(true);
+        }
+
+        /// <summary>
+        /// Return User Profile Picture relative Url. UserId, width and height can be passed to build a formatted relative Avatar Url.
+        /// </summary>        
+        /// <param name="includeCdv">Indicates if cdv (Cache Delayed Verification) has to be included in the returned URL.</param>
+        /// <returns>Formatted url,  e.g. /profilepic.ashx?userid={0}&amp;h={1}&amp;w={2} considering child portal
+        /// </returns>
+        /// <remarks>Usage: ascx - &lt;asp:Image ID="avatar" runat="server" CssClass="SkinObject" /&gt;
+        /// code behind - avatar.ImageUrl = string.Format(Globals.UserProfilePicRelativeUrl(), userInfo.UserID, 32, 32)
+        /// </remarks>
+        public static string UserProfilePicRelativeUrl(bool includeCdv)
+        {
+            const string query = "/profilepic.ashx?userId={0}&h={1}&w={2}";
             var currentAlias = GetPortalSettings().PortalAlias.HTTPAlias;
-            var childPortalAlias = currentAlias.IndexOf('/') > 0 ? "/" + currentAlias.Substring(currentAlias.IndexOf('/') + 1) : "";
-            return Globals.ApplicationPath + childPortalAlias + "/profilepic.ashx?userId={0}&h={1}&w={2}";
+            var index = currentAlias.IndexOf('/');
+            var childPortalAlias = index > 0 ? "/" + currentAlias.Substring(index + 1) : "";
+
+            var cdv = "";
+            if (includeCdv)
+            {
+                cdv = "&cdv=" + DateTime.Now.Ticks;
+            }
+
+            if (childPortalAlias.StartsWith(Globals.ApplicationPath))
+                return childPortalAlias + query + cdv;
+
+            return Globals.ApplicationPath + childPortalAlias + query + cdv;
 
         }
 

@@ -63,6 +63,15 @@ namespace DotNetNuke.Entities.Modules
         void CopyModules(TabInfo sourceTab, TabInfo destinationTab, bool asReference);
 
         /// <summary>
+        /// Copies all modules in source page to a new page.
+        /// </summary>
+        /// <param name="sourceTab">The source tab.</param>
+        /// <param name="destinationTab">The destination tab.</param>
+        /// <param name="asReference">if set to <c>true</c> will use source module directly, else will create new module info by source module.</param>
+        /// <param name="includeAllTabsMobules">if set to <c>true</c> will include modules which shown on all pages, this is used when create localized copy.</param>
+        void CopyModules(TabInfo sourceTab, TabInfo destinationTab, bool asReference, bool includeAllTabsMobules);
+
+        /// <summary>
         /// This method provides two functions:
         /// 1. Check and ensure that the "Module" content item type exists - if not create it
         /// 2. add a content item
@@ -283,5 +292,19 @@ namespace DotNetNuke.Entities.Modules
         /// <param name="localizedModule">The localized module.</param>
         /// <param name="isTranslated">if set to <c>true</c> will mark the module as translated].</param>
         void UpdateTranslationStatus(ModuleInfo localizedModule, bool isTranslated);
+
+        /// <summary>
+        /// Check if a ModuleInfo belongs to the referenced Tab or not
+        /// </summary>
+        /// <param name="module">A ModuleInfo object to be checked</param>
+        /// <returns>True is TabId points to a different tab from initial Tab where the module was added. Otherwise, False</returns>
+        bool IsSharedModule(ModuleInfo module);
+        
+        /// <summary>
+        /// Get the Tab ID corresponding to the initial Tab where the module was added
+        /// </summary>
+        /// <param name="module">A ModuleInfo object to be checked</param>
+        /// <returns>The Tab Id from initial Tab where the module was added</returns>
+        int GetMasterTabId(ModuleInfo module);
     }
 }

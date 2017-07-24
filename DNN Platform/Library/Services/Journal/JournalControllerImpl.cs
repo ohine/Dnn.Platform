@@ -24,26 +24,32 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlTypes;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Web;
-using System.Web.Caching;
 using System.Xml;
-
+using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
+using DotNetNuke.Data;
 using DotNetNuke.Entities.Content;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Entities.Users;
 using DotNetNuke.Security;
 using DotNetNuke.Security.Roles;
-using DotNetNuke.Security.Roles.Internal;
+using DotNetNuke.Services.FileSystem;
+using DotNetNuke.Services.Search.Entities;
+using DotNetNuke.Services.Search.Internals;
 
 namespace DotNetNuke.Services.Journal
 {
     internal class JournalControllerImpl : IJournalController
     {
         private readonly IJournalDataService _dataService;
+        private const string AllowResizePhotosSetting = "Journal_AllowResizePhotos";
+        private const string AllowPhotosSetting = "Journal_AllowPhotos";
+        private const string EditorEnabledSetting = "Journal_EditorEnabled";
 
         #region Constructors
 
@@ -126,8 +132,171 @@ namespace DotNetNuke.Services.Journal
             {
                 UpdateGroupStats(portalId, groupId);
             }
+
+            // queue remove journal from search index
+            var document = new SearchDocumentToDelete
+            {
+                PortalId = portalId,
+                AuthorUserId = currentUserId,
+                UniqueKey = ji.ContentItemId.ToString("D"),
+                //QueryString = "journalid=" + journalId,
+                SearchTypeId = SearchHelper.Instance.GetSearchTypeByName("module").SearchTypeId
+            };
+
+            if (groupId > 0)
+                document.RoleId = groupId;
+
+            DataProvider.Instance().AddSearchDeletedItems(document);
+        }
+        
+        private Stream GetJournalImageContent(Stream fileContent)
+        {
+            Image image = new Bitmap(fileContent);
+            int thumbnailWidth = 400;
+            int thumbnailHeight = 400;
+            GetThumbnailSize(image.Width, image.Height, ref thumbnailWidth, ref thumbnailHeight);
+            var thumbnail = image.GetThumbnailImage(thumbnailWidth, thumbnailHeight, ThumbnailCallback, IntPtr.Zero);
+            var result = new MemoryStream();
+            thumbnail.Save(result, image.RawFormat);
+
+            return result;
         }
 
+        private void GetThumbnailSize(int imageWidth, int imageHeight, ref int thumbnailWidth, ref int thumbnailHeight)
+        {
+            if (imageWidth >= imageHeight)
+            {
+                thumbnailWidth = Math.Min(imageWidth, thumbnailWidth);
+                thumbnailHeight = GetMinorSize(imageHeight, imageWidth, thumbnailWidth);
+            }
+            else
+            {
+                thumbnailHeight = Math.Min(imageHeight, thumbnailHeight);
+                thumbnailWidth = GetMinorSize(imageWidth, imageHeight, thumbnailHeight);
+            }
+        }
+
+        private int GetMinorSize(int imageMinorSize, int imageMajorSize, int thumbnailMajorSize)
+        {
+            if (imageMajorSize == thumbnailMajorSize)
+            {
+                return imageMinorSize;
+            }
+
+            double calculated = (Convert.ToDouble(imageMinorSize) * Convert.ToDouble(thumbnailMajorSize)) / Convert.ToDouble(imageMajorSize);
+            return Convert.ToInt32(Math.Round(calculated));
+        }
+
+
+        private bool IsImageFile(string fileName)
+        {
+            return (Globals.glbImageFileTypes + ",").IndexOf(Path.GetExtension(fileName).ToLower().Replace(".", "") + ",") > -1;        
+        }
+
+        private bool ThumbnailCallback()
+        {
+            return true;
+        }
+
+        private bool IsResizePhotosEnabled(ModuleInfo module)
+        {
+            return GetBooleanSetting(AllowResizePhotosSetting, false, module) &&
+                   GetBooleanSetting(AllowPhotosSetting, true, module) &&
+                   GetBooleanSetting(EditorEnabledSetting, true, module);
+        }
+        private bool GetBooleanSetting(string settingName, bool defaultValue, ModuleInfo module)
+        {            
+            if (module.ModuleSettings.Contains(settingName))
+            {
+                return Convert.ToBoolean(module.ModuleSettings[settingName].ToString());
+            }
+            return defaultValue;
+        }
+
+        // none of the parameters should be null; checked before calling this method
+        private void PrepareSecuritySet(JournalItem journalItem, UserInfo currentUser)
+        {
+            var originalSecuritySet =
+                journalItem.SecuritySet = (journalItem.SecuritySet ??string.Empty).ToUpperInvariant();
+
+            if (String.IsNullOrEmpty(journalItem.SecuritySet))
+            {
+                journalItem.SecuritySet = "E,";
+            }
+            else if (!journalItem.SecuritySet.EndsWith(","))
+            {
+                journalItem.SecuritySet += ",";
+                originalSecuritySet = journalItem.SecuritySet;
+            }
+
+            if (journalItem.SecuritySet == "F,")
+            {
+                journalItem.SecuritySet = "F" + journalItem.UserId + ",";
+                if (journalItem.ProfileId > 0)
+                    journalItem.SecuritySet += "P" + journalItem.ProfileId + ",";
+            }
+            else if (journalItem.SecuritySet == "U,")
+            {
+                journalItem.SecuritySet += "U" + journalItem.UserId + ",";
+            }
+            else if (journalItem.SecuritySet == "R,")
+            {
+                if (journalItem.SocialGroupId > 0)
+                    journalItem.SecuritySet += "R" + journalItem.SocialGroupId + ",";
+            }
+
+            if (journalItem.ProfileId > 0 && journalItem.UserId != journalItem.ProfileId)
+            {
+                if (!journalItem.SecuritySet.Contains("P" + journalItem.ProfileId + ","))
+                {
+                    journalItem.SecuritySet += "P" + journalItem.ProfileId + ",";
+                }
+
+                if (!journalItem.SecuritySet.Contains("U" + journalItem.UserId + ","))
+                {
+                    journalItem.SecuritySet += "U" + journalItem.UserId + ",";
+                }
+            }
+
+            if (!journalItem.SecuritySet.Contains("U" + journalItem.UserId + ","))
+            {
+                journalItem.SecuritySet += "U" + journalItem.UserId + ",";
+            }
+
+            //if the post is marked as private, we shouldn't make it visible to the group.
+            if (journalItem.SocialGroupId > 0 && originalSecuritySet.Contains("U,"))
+            {
+                var item = journalItem;
+                var role = RoleController.Instance.GetRole(journalItem.PortalId,
+                    r => r.SecurityMode != SecurityMode.SecurityRole && r.RoleID == item.SocialGroupId);
+
+                if (role != null && !role.IsPublic)
+                {
+                    journalItem.SecuritySet = journalItem.SecuritySet.Replace("E,", String.Empty).Replace("C,", String.Empty);
+                }
+            }
+
+            // clean up and remove duplicates
+            var parts = journalItem.SecuritySet
+                .Replace(" ", "")
+                .Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
+                .Distinct()
+                .Except(InvalidSecuritySetsWithoutId)
+                .Where(p => p.IndexOfAny(ValidSecurityDescriptors) >= 0);
+
+            //TODO: validate existence and visibility/accessability of all Roles added to the set (if any)
+
+            journalItem.SecuritySet = string.Join(",", parts);
+        }
+
+        private static readonly string[] InvalidSecuritySetsWithoutId = new[] { "R", "U", "F", "P" };
+        private static readonly char[] ValidSecurityDescriptors = new[] { 'E', 'C', 'R', 'U', 'F', 'P' };
+
+        #endregion
+
+        #region Public Methods
+
+        // Journal Items
         public void SaveJournalItem(JournalItem journalItem, int tabId, int moduleId)
         {
             if (journalItem.UserId < 1)
@@ -197,57 +366,8 @@ namespace DotNetNuke.Services.Journal
                 journalData = null;
             }
 
-            var originalSecuritySet = journalItem.SecuritySet;
-            if (String.IsNullOrEmpty(journalItem.SecuritySet))
-            {
-                journalItem.SecuritySet = "E,";
-            }
-            else if (!journalItem.SecuritySet.EndsWith(","))
-            {
-                journalItem.SecuritySet += ",";
-            }
-            if (journalItem.SecuritySet == "F,")
-            {
-                journalItem.SecuritySet = "F" + journalItem.UserId.ToString(CultureInfo.InvariantCulture) + ",";
-                journalItem.SecuritySet += "P" + journalItem.ProfileId.ToString(CultureInfo.InvariantCulture) + ",";
-            }
-            if (journalItem.SecuritySet == "U,")
-            {
-                journalItem.SecuritySet += "U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture) + ",";
-            }
-            if (journalItem.ProfileId > 0 && journalItem.UserId != journalItem.ProfileId)
-            {
-                if (!journalItem.SecuritySet.Contains("P" + journalItem.ProfileId.ToString(CultureInfo.InvariantCulture)))
-                {
-                    journalItem.SecuritySet += "P" + journalItem.ProfileId.ToString(CultureInfo.InvariantCulture) + ",";
-                }
-                if (!journalItem.SecuritySet.Contains("U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture)))
-                {
-                    journalItem.SecuritySet += "U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture) + ",";
-                }
-            }
-            if (!journalItem.SecuritySet.Contains("U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture)))
-            {
-                journalItem.SecuritySet += "U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture) + ",";
-            }
+            PrepareSecuritySet(journalItem, currentUser);
 
-            //if the post mark as private, shouldn't let it visible to the group.
-            if (journalItem.SocialGroupId > 0 && originalSecuritySet != "U")
-            {
-                JournalItem item = journalItem;
-                RoleInfo role = RoleController.Instance.GetRole(journalItem.PortalId, r => r.SecurityMode != SecurityMode.SecurityRole && r.RoleID == item.SocialGroupId);
-                if (role != null)
-                {
-                    if (currentUser.IsInRole(role.RoleName))
-                    {
-                        journalItem.SecuritySet += "R" + journalItem.SocialGroupId.ToString(CultureInfo.InvariantCulture) + ",";
-                        if (!role.IsPublic)
-                        {
-                            journalItem.SecuritySet = journalItem.SecuritySet.Replace("E,", String.Empty);
-                        }
-                    }
-                }
-            }
             journalItem.JournalId = _dataService.Journal_Save(journalItem.PortalId,
                                                      journalItem.UserId,
                                                      journalItem.ProfileId,
@@ -264,6 +384,7 @@ namespace DotNetNuke.Services.Journal
                                                      journalItem.SecuritySet,
                                                      journalItem.CommentsDisabled,
                                                      journalItem.CommentsHidden);
+
             var updatedJournalItem = GetJournalItem(journalItem.PortalId, journalItem.UserId, journalItem.JournalId);
             journalItem.DateCreated = updatedJournalItem.DateCreated;
             journalItem.DateUpdated = updatedJournalItem.DateUpdated;
@@ -343,7 +464,8 @@ namespace DotNetNuke.Services.Journal
                 }
                 if (!String.IsNullOrEmpty(journalItem.ItemData.Description))
                 {
-                    journalItem.ItemData.Description = HttpUtility.HtmlDecode(portalSecurity.InputFilter(journalItem.ItemData.Description, PortalSecurity.FilterFlag.NoScripting));
+                    journalItem.ItemData.Description =
+                        HttpUtility.HtmlDecode(portalSecurity.InputFilter(journalItem.ItemData.Description, PortalSecurity.FilterFlag.NoScripting));
                 }
                 if (!String.IsNullOrEmpty(journalItem.ItemData.Url))
                 {
@@ -359,48 +481,9 @@ namespace DotNetNuke.Services.Journal
             {
                 journalData = null;
             }
-            if (String.IsNullOrEmpty(journalItem.SecuritySet))
-            {
-                journalItem.SecuritySet = "E,";
-            }
-            else if (!journalItem.SecuritySet.EndsWith(","))
-            {
-                journalItem.SecuritySet += ",";
-            }
-            if (journalItem.SecuritySet == "F,")
-            {
-                journalItem.SecuritySet = "F" + journalItem.UserId.ToString(CultureInfo.InvariantCulture) + ",";
-                journalItem.SecuritySet += "P" + journalItem.ProfileId.ToString(CultureInfo.InvariantCulture) + ",";
-            }
-            if (journalItem.SecuritySet == "U,")
-            {
-                journalItem.SecuritySet += "U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture) + ",";
-            }
-            if (journalItem.ProfileId > 0 && journalItem.UserId != journalItem.ProfileId)
-            {
-                journalItem.SecuritySet += "P" + journalItem.ProfileId.ToString(CultureInfo.InvariantCulture) + ",";
-                journalItem.SecuritySet += "U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture) + ",";
-            }
-            if (!journalItem.SecuritySet.Contains("U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture)))
-            {
-                journalItem.SecuritySet += "U" + journalItem.UserId.ToString(CultureInfo.InvariantCulture) + ",";
-            }
-            if (journalItem.SocialGroupId > 0)
-            {
-                JournalItem item = journalItem;
-                RoleInfo role = RoleController.Instance.GetRole(journalItem.PortalId, r => r.SecurityMode != SecurityMode.SecurityRole && r.RoleID == item.SocialGroupId);
-                if (role != null)
-                {
-                    if (currentUser.IsInRole(role.RoleName))
-                    {
-                        journalItem.SecuritySet += "R" + journalItem.SocialGroupId.ToString(CultureInfo.InvariantCulture) + ",";
-                        if (!role.IsPublic)
-                        {
-                            journalItem.SecuritySet = journalItem.SecuritySet.Replace("E,", String.Empty);
-                        }
-                    }
-                }
-            }
+
+            PrepareSecuritySet(journalItem, currentUser);
+
             journalItem.JournalId = _dataService.Journal_Update(journalItem.PortalId,
                                                      journalItem.UserId,
                                                      journalItem.ProfileId,
@@ -446,12 +529,7 @@ namespace DotNetNuke.Services.Journal
                 }
             }
         }
-
-        #endregion
-
-        #region Public Methods
-
-        // Journal Items
+        
         public JournalItem GetJournalItem(int portalId, int currentUserId, int journalId)
         {
             return GetJournalItem(portalId, currentUserId, journalId, false, false);
@@ -491,6 +569,18 @@ namespace DotNetNuke.Services.Journal
             return CBO.FillObject<JournalItem>(_dataService.Journal_GetByKey(portalId, objectKey, includeAllItems, isDeleted));
         }
 
+        public IFileInfo SaveJourmalFile(ModuleInfo module, UserInfo userInfo, string fileName, Stream fileContent)
+        {
+            var userFolder = FolderManager.Instance.GetUserFolder(userInfo);
+
+            if (IsImageFile(fileName) && IsResizePhotosEnabled(module))
+            {
+                return FileManager.Instance.AddFile(userFolder, fileName, GetJournalImageContent(fileContent), true);
+            }
+            //todo: deal with the case where the exact file name already exists.            
+            return FileManager.Instance.AddFile(userFolder, fileName, fileContent, true);                    
+        }
+        
         public void SaveJournalItem(JournalItem journalItem, ModuleInfo module)
         {
             var tabId = module == null ? Null.NullInteger : module.TabID;
@@ -635,6 +725,7 @@ namespace DotNetNuke.Services.Journal
         public void DeleteComment(int journalId, int commentId)
         {
             _dataService.Journal_Comment_Delete(journalId, commentId);
+            //UNDONE: update the parent journal item and content item so this comment gets removed from search index
         }
 
         public void LikeComment(int journalId, int commentId, int userId, string displayName)

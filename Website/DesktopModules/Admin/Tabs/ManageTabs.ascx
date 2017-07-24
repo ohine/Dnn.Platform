@@ -50,18 +50,25 @@
 					<dnn:Label ID="plTags" runat="server" ControlName="termsSelector" />
 					<dnn:TermsSelector ID="termsSelector" runat="server" IncludeTags="False" />
 				</div>    
+               <dnnext:UserControlExtensionControl  runat="server" ID="PageDetailsExtensionControl" Module="ManageTabs" Group="PageSettingsPageDetails"/>
 				<div class="dnnFormItem">
 					<dnn:Label ID="plParentTab" runat="server" ResourceKey="ParentTab" ControlName="cboParentTab" />
                     <dnn:DnnPageDropDownList ID="cboParentTab" runat="server" IncludeAllTabTypes="True" IncludeDisabledTabs="True" IncludeActiveTab="true"/>
 				</div>    
 				<div id="insertPositionRow" class="dnnFormItem" runat="server" ViewStateMode="Disabled">
                     <div>
-					<dnn:Label ID="plInsertPosition" runat="server" ResourceKey="InsertPosition" ControlName="cboPositionTab" />
-					<asp:RadioButtonList ID="rbInsertPosition" runat="server" CssClass="dnnFormRadioButtons" RepeatDirection="Horizontal" RepeatLayout="Flow" ViewStateMode="Disabled" />
+					    <dnn:Label ID="plInsertPosition" runat="server" ResourceKey="InsertPosition" ControlName="cboPositionTab" />
+					    <asp:RadioButtonList ID="rbInsertPosition" runat="server" CssClass="dnnFormRadioButtons" RepeatDirection="Horizontal" RepeatLayout="Flow" ViewStateMode="Disabled">
+                            <Items>
+                                <asp:ListItem Value="Before" Text="InsertBefore" resourcekey="InsertBefore"></asp:ListItem>
+                                <asp:ListItem Value="After" Text="InsertAfter" resourcekey="InsertAfter" Selected="True"></asp:ListItem>
+                                <asp:ListItem Value="AtEnd" Text="InsertAtEnd" resourcekey="InsertAtEnd"></asp:ListItem>
+                            </Items>
+                        </asp:RadioButtonList>
                     </div>
                     <div class="dnnFormItem">
-                    <div class="dnnLabel"></div>
-                    <dnn:DnnComboBox ID="cboPositionTab" CssClass="dnnPositionTab" runat="server" DataTextField="LocalizedTabName" DataValueField="TabId" ViewStateMode="Disabled" />
+                        <div class="dnnLabel"></div>
+                        <dnn:DnnComboBox ID="cboPositionTab" CssClass="dnnPositionTab" runat="server" DataTextField="LocalizedTabName" DataValueField="TabId" ViewStateMode="Disabled" />
                     </div>
 				</div>    
 				<div id="templateRow1" class="dnnFormItem" runat="server" visible="false">
@@ -226,7 +233,8 @@
 				<div class="dnnFormItem">
 					<dnn:Label ID="plPageHeadText" runat="server" ResourceKey="PageHeadText" Suffix=":" HelpKey="PageHeadText.Help" ControlName="txtPageHeadText" />
 					<asp:TextBox ID="txtPageHeadText" runat="server" TextMode="MultiLine" Rows="4" Columns="50" />
-				</div>       
+				</div>   
+                
 			</fieldset>
 			<h2 id="dnnPanel-TabsCacheSettings"  class="dnnFormSectionHead"><a href="" class=""><%=LocalizeString("CacheSettings")%></a></h2>
 			<fieldset>
@@ -349,7 +357,7 @@
             skinSelector: '<%= pageSkinCombo.ClientID %>',
             containerSelector: '<%= pageContainerCombo.ClientID %>',
             baseUrl: '<%= DotNetNuke.Common.Globals.NavigateURL(this.TabId) %>',
-            noSelectionMessage: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(LocalizeString("PreviewNoSelectionMessage.Text")) %>',
+            noSelectionMessage: '<%= LocalizeSafeJsString("PreviewNoSelectionMessage.Text") %>',
             alertCloseText: '<%= Localization.GetSafeJSString("Close.Text", Localization.SharedResourceFile)%>',
             alertOkText: '<%= Localization.GetSafeJSString("Ok.Text", Localization.SharedResourceFile)%>',
             useComboBox: true
@@ -378,6 +386,8 @@
 	    if ($("ul.dnnAdminTabNav > li.ui-tabs-active").attr("id").indexOf("propertiesTab") > -1) {
 	    	$("ul.dnnMainActions, div.dnnModuleAuditControl").hide();
 	    }
+
+        $('#<%=urlTextBox.ClientID%>').prefixInput({ prefix: "/" });
     }
 
     $(document).ready(function () {

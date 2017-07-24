@@ -1,6 +1,6 @@
 #region Copyright
 // 
-// DotNetNuke® - http://www.dotnetnuke.com
+// DotNetNukeÂ® - http://www.dotnetnuke.com
 // Copyright (c) 2002-2014
 // by DotNetNuke Corporation
 // 
@@ -22,8 +22,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -32,6 +30,7 @@ using DotNetNuke.Common;
 using DotNetNuke.Entities.Host;
 using DotNetNuke.Instrumentation;
 using DotNetNuke.Services.FileSystem;
+using DotNetNuke.Services.Journal;
 using DotNetNuke.Web.Api;
 using DotNetNuke.Web.Api.Internal;
 using Newtonsoft.Json;
@@ -41,9 +40,7 @@ namespace DotNetNuke.Modules.Journal
     public class FileUploadController : DnnApiController
     {
     	private static readonly ILog Logger = LoggerSource.Instance.GetLogger(typeof (FileUploadController));
-        private readonly IFileManager _fileManager = FileManager.Instance;
-        private readonly IFolderManager _folderManager = FolderManager.Instance;
-
+        
         [DnnAuthorize]
         [HttpPost]
         [IFrameSupportedValidateAntiForgeryToken]
@@ -84,6 +81,13 @@ namespace DotNetNuke.Modules.Journal
                    && !Regex.IsMatch(fileName, @"\..+;");
         }
 
+        private static readonly List<string> ImageExtensions = new List<string> { ".JPG", ".JPE", ".BMP", ".GIF", ".PNG", ".JPEG", ".ICO", ".SVG" };
+
+        private static bool IsImageExtension(string extension)
+        {
+            return ImageExtensions.Contains(extension.ToUpper());
+        }
+
         // Upload entire file
         private void UploadWholeFile(HttpContextBase context, ICollection<FilesStatus> statuses)
         {
@@ -93,13 +97,15 @@ namespace DotNetNuke.Modules.Journal
                 if (file == null) continue;
 
                 var fileName = Path.GetFileName(file.FileName);
-
+                //fix any filename issues that would cause double escaping exceptions
+                if (IsImageExtension(Path.GetExtension(fileName)))
+                {
+                    fileName = fileName.Replace("+", ""); 
+                }
+                
                 if (IsAllowedExtension(fileName))
                 {
-                    var userFolder = _folderManager.GetUserFolder(UserInfo);
-
-                    //todo: deal with the case where the exact file name already exists.
-                    var fileInfo = _fileManager.AddFile(userFolder, fileName, file.InputStream, true);
+                    var fileInfo = JournalController.Instance.SaveJourmalFile(ActiveModule, UserInfo, fileName, file.InputStream);
                     var fileIcon = Entities.Icons.IconController.IconURL("Ext" + fileInfo.Extension, "32x32");
                     if (!File.Exists(context.Server.MapPath(fileIcon)))
                     {

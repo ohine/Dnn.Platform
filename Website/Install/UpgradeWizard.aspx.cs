@@ -62,7 +62,6 @@ namespace DotNetNuke.Services.Install
         private const string LocalesFile = "/Install/App_LocalResources/Locales.xml";
         protected static readonly string StatusFilename = "upgradestat.log.resources.txt";
         protected static new string LocalResourceFile = "~/Install/App_LocalResources/UpgradeWizard.aspx.resx";
-        private Version _dataBaseVersion;        
         private static string _culture;
         private static string[] _supportedLanguages;
 
@@ -81,11 +80,12 @@ namespace DotNetNuke.Services.Install
                 return DotNetNukeContext.Current.Application.Version;
             }
         }
-        protected Version DatabaseVersion
+
+        protected Version CurrentVersion
         {
             get
             {
-                return _dataBaseVersion ?? (_dataBaseVersion = DataProvider.Instance().GetVersion());
+                return DotNetNukeContext.Current.Application.CurrentVersion;
             }
         }
 
@@ -110,8 +110,18 @@ namespace DotNetNuke.Services.Install
         private void LocalizePage()
         {
             SetBrowserLanguage();
-            versionLabel.Text = string.Format(LocalizeString("Version"), Globals.FormatVersion(ApplicationVersion));
-            currentVersionLabel.Text = string.Format(LocalizeString("CurrentVersion"), Globals.FormatVersion(DatabaseVersion));
+            Page.Title = LocalizeString("Title");
+            if (Globals.FormatVersion(ApplicationVersion) == Globals.FormatVersion(CurrentVersion))
+            {
+                versionLabel.Visible = false;
+                currentVersionLabel.Visible = false;
+                versionsMatch.Text = LocalizeString("VersionsMatch");
+            }
+            else
+            {
+                versionLabel.Text = string.Format(LocalizeString("Version"), Globals.FormatVersion(ApplicationVersion));
+                currentVersionLabel.Text = string.Format(LocalizeString("CurrentVersion"), Globals.FormatVersion(CurrentVersion));  
+            }
         }
 
         private static void GetInstallerLocales()
@@ -296,6 +306,28 @@ namespace DotNetNuke.Services.Install
             Config.Touch();
             Response.Redirect("../Default.aspx", true);
         }
+
+        private void SslRequiredCheck()
+        {
+            if (Entities.Host.Host.UpgradeForceSsl && !Request.IsSecureConnection)
+            {
+                var sslDomain = Entities.Host.Host.SslDomain;
+                if (string.IsNullOrEmpty(sslDomain))
+                {
+                    sslDomain = Request.Url.Host;
+                }
+                else if (sslDomain.Contains("://"))
+                {
+                    sslDomain = sslDomain.Substring(sslDomain.IndexOf("://") + 3);
+                }
+
+                var sslUrl = string.Format("https://{0}{1}",
+                    sslDomain, Request.RawUrl);
+
+                Response.Redirect(sslUrl, true);
+            }
+        }
+
         #endregion
 
         #region Protected Methods
@@ -325,6 +357,7 @@ namespace DotNetNuke.Services.Install
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
+            SslRequiredCheck();
             GetInstallerLocales();
         }
 

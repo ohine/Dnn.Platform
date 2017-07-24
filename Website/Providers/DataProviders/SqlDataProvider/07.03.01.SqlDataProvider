@@ -11,7 +11,11 @@
 /* DNN-5506. */
 /*************/
 
-ALTER PROCEDURE {databaseOwner}[{objectQualifier}UpdatePackage]
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}UpdatePackage]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE {databaseOwner}[{objectQualifier}UpdatePackage]
+GO
+
+CREATE PROCEDURE {databaseOwner}[{objectQualifier}UpdatePackage]
 	@PackageID			int,
 	@PortalID			int,
 	@Name			    nvarchar(128),
@@ -51,6 +55,7 @@ AS
 			IconFile = @IconFile
 		WHERE  PackageID = @PackageID
 GO
+
 
 /************************************************************/
 /*****              SqlDataProvider                     *****/

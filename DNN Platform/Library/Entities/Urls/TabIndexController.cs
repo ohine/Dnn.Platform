@@ -36,6 +36,7 @@ using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Entities.Tabs;
+using DotNetNuke.Entities.Users;
 using DotNetNuke.Services.Log.EventLog;
 
 #endregion
@@ -65,6 +66,7 @@ namespace DotNetNuke.Entities.Urls
             bool checkForDupUrls = settings.CheckForDuplicateUrls;
             //697 : custom url rewrites with large number of path depths fail because of incorrect path depth calculation
             int maxTabPathDepth = 1;
+            string origRewritePath = rewritePath;
             string newRewritePath = rewritePath;
             string aliasCulture = null;
             //get the culture for this alias
@@ -76,6 +78,7 @@ namespace DotNetNuke.Entities.Urls
             }
             foreach (var redirect in tab.TabUrls)
             {
+                rewritePath = origRewritePath;
                 //allow for additional qs parameters
                 if (!String.IsNullOrEmpty(redirect.QueryString))
                 {
@@ -467,11 +470,10 @@ namespace DotNetNuke.Entities.Urls
             }
             bool permanentRedirect = tab.PermanentRedirect;
             //determine the rewrite parameter
-            //for deleted, expired or pages not enabled yet, direct to the home page if the setting is enabled
+            //for deleted or pages not enabled yet, direct to the home page if the setting is enabled
             //534 : tab is disabled, mark as deleted (don't want to cause duplicate tab warnings)
-            bool isDeleted = (tab.IsDeleted || tab.DisableLink ||
-                             (tab.EndDate < DateTime.Now && tab.EndDate > DateTime.MinValue) ||
-                             (tab.StartDate > DateTime.Now && tab.StartDate > DateTime.MinValue));
+			//DNN-6186: add expired pages in dictionary as admin/host user should able to visit/edit them.
+            bool isDeleted = (tab.IsDeleted || tab.DisableLink);
             if (isDeleted)
             // don't care what setting is, redirect code will decide whether to redirect or 404 - just mark as page deleted && 
             // settings.DeletedTabHandlingValue == DeletedTabHandlingTypes.Do301RedirectToPortalHome)

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,7 +11,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>DotNetNuke.Modules.Html</RootNamespace>
     <AssemblyName>DotNetNuke.Modules.Html</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <MyType>Custom</MyType>
     <OptionExplicit>On</OptionExplicit>
     <OptionCompare>Binary</OptionCompare>
@@ -38,6 +38,7 @@
     <NoWarn>1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <LangVersion>default</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -48,6 +49,7 @@
     <DocumentationFile>bin\DotNetNuke.Modules.Html.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <Extension>zip</Extension>
@@ -59,12 +61,14 @@
     <NoWarn>1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <OutputPath>bin\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <OutputPath>bin\</OutputPath>
     <NoWarn>1591</NoWarn>
     <DocumentationFile>DotNetNuke.Modules.Html.XML</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -74,10 +78,6 @@
   <ItemGroup>
     <Reference Include="DotNetNuke.WebControls">
       <HintPath>..\..\Controls\DotNetNuke.WebControls\bin\DotNetNuke.WebControls.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="DotNetNuke.WebUtility">
-      <HintPath>..\..\Controls\DotNetNuke.WebUtility\bin\DotNetNuke.WebUtility.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.ApplicationBlocks.Data">
@@ -191,6 +191,13 @@
     <None Include="Providers\DataProviders\SqlDataProvider\06.01.00.SqlDataProvider" />
     <None Include="Providers\DataProviders\SqlDataProvider\Uninstall.SqlDataProvider" />
     <None Include="Providers\DataProviders\SqlDataProvider\Upgrade.SqlDataProvider" />
+    <Content Include="web.config" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Components\ClientDependency\Source\ClientDependency.Core.csproj">
@@ -200,6 +207,10 @@
     <ProjectReference Include="..\..\DotNetNuke.Web.Client\DotNetNuke.Web.Client.csproj">
       <Project>{03e3afa5-ddc9-48fb-a839-ad4282ce237e}</Project>
       <Name>DotNetNuke.Web.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DotNetNuke.WebUtility\DotNetNuke.WebUtility.vbproj">
+      <Project>{4912f062-f8a8-4f9d-8f8e-244ebee1acbd}</Project>
+      <Name>DotNetNuke.WebUtility</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\DotNetNuke.Web\DotNetNuke.Web.csproj">
       <Project>{8DA31B98-5E8E-4243-8967-D4CF7DC622CB}</Project>

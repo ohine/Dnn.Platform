@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DotNetNuke.Instrumentation</RootNamespace>
     <AssemblyName>DotNetNuke.Instrumentation</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -25,6 +25,7 @@
     <DocumentationFile>bin\DotNetNuke.Instrumentation.xml</DocumentationFile>
     <NoWarn>1591, 0649</NoWarn>
     <LangVersion>default</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -35,12 +36,9 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\DotNetNuke.Instrumentation.xml</DocumentationFile>
     <NoWarn>1591, 0649</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotNetNuke.Log4Net">
-      <HintPath>..\Components\Log4Net\bin\DotNetNuke.Log4Net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -58,11 +56,17 @@
     <Compile Include="LoggerSourceImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetNuke.Log4net\DotNetNuke.Log4Net.csproj">
+      <Project>{04f77171-0634-46e0-a95e-d7477c88712e}</Project>
+      <Name>DotNetNuke.Log4Net</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild" DependsOnTargets="DebugProject">
   </Target>
   <Target Name="DebugProject">
-    <Copy SourceFiles="..\Components\Log4Net\bin\DotNetNuke.Log4Net.dll" DestinationFolder="..\..\Website\bin\" />
+    <Copy SourceFiles="bin\DotNetNuke.Log4Net.dll" DestinationFolder="..\..\Website\bin\" />
     <Copy SourceFiles="bin\DotNetNuke.Instrumentation.dll" DestinationFolder="..\..\Website\bin" />
     <Copy SourceFiles="bin\DotNetNuke.Instrumentation.pdb" DestinationFolder="..\..\Website\bin" />
     <Copy SourceFiles="bin\DotNetNuke.Instrumentation.xml" DestinationFolder="..\..\Website\bin" />

@@ -19,6 +19,7 @@
 // DEALINGS IN THE SOFTWARE.
 #endregion
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO;
@@ -29,6 +30,7 @@ using DotNetNuke.Common.Utilities;
 using DotNetNuke.Data;
 using DotNetNuke.Entities.Content;
 using DotNetNuke.Entities.Content.Workflow;
+using DotNetNuke.Entities.Content.Workflow.Entities;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Services.Cache;
 using DotNetNuke.Services.FileSystem;
@@ -64,8 +66,8 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
         private Mock<IFileInfo> _fileInfo;
         private Mock<IPathUtils> _pathUtils;
         private Mock<IFileVersionController> _fileVersionController;
-        private Mock<IContentWorkflowController> _contentWorkflowController;
-        private Mock<IFileEventHandlersContainer> _fileEventHandlersContainer;
+        private Mock<IWorkflowManager> _workflowManager;
+        private Mock<IEventHandlersContainer<IFileEventHandlers>> _fileEventHandlersContainer;
         private Mock<IFileLockingController> _mockFileLockingController;
         private Mock<IFileDeletionController> _mockFileDeletionController;
 
@@ -85,8 +87,8 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
             _portalController = new Mock<IPortalController>();
             _folderMappingController = new Mock<IFolderMappingController>();
             _fileVersionController = new Mock<IFileVersionController>();
-            _contentWorkflowController = new Mock<IContentWorkflowController>();
-            _fileEventHandlersContainer = new Mock<IFileEventHandlersContainer>();
+            _workflowManager = new Mock<IWorkflowManager>();
+            _fileEventHandlersContainer = new Mock<IEventHandlersContainer<IFileEventHandlers>>();
             _globals = new Mock<IGlobals>();
             _cbo = new Mock<ICBO>();
             _pathUtils = new Mock<IPathUtils>();
@@ -101,8 +103,8 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
             CBO.SetTestableInstance(_cbo.Object);
             PathUtils.RegisterInstance(_pathUtils.Object);
             FileVersionController.RegisterInstance(_fileVersionController.Object);
-            ContentWorkflowController.RegisterInstance(_contentWorkflowController.Object);
-            FileEventHandlersContainer.RegisterInstance(_fileEventHandlersContainer.Object);
+            WorkflowManager.SetTestableInstance(_workflowManager.Object);
+            EventHandlersContainer<IFileEventHandlers>.RegisterInstance(_fileEventHandlersContainer.Object);
             _mockFileManager = new Mock<FileManager> { CallBase = true };
 
             _folderInfo = new Mock<IFolderInfo>();
@@ -117,9 +119,15 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
         [TearDown]
         public void TearDown()
         {
+            TestableGlobals.ClearInstance();
+            CBO.ClearInstance();
+
+            FolderPermissionController.ClearInstance();
             FileLockingController.ClearInstance();
             FileDeletionController.ClearInstance();
             MockComponentProvider.ResetContainer();
+            PortalController.ClearInstance();
+
         }
 
         #endregion
@@ -210,8 +218,10 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
 
             _mockFileManager.Setup(mfm => mfm.IsAllowedExtension(Constants.FOLDER_ValidFileName)).Returns(true);
             _mockFileManager.Setup(mfm => mfm.CreateFileContentItem()).Returns(new ContentItem());
+            _mockFileManager.Setup(mfm => mfm.IsImageFile(It.IsAny<IFileInfo>())).Returns(false);
 
-            _contentWorkflowController.Setup(wc => wc.GetWorkflowByID(It.IsAny<int>())).Returns((ContentWorkflow)null);
+
+            _workflowManager.Setup(we => we.GetWorkflow(It.IsAny<int>())).Returns((Workflow)null);
 
             //Act
             _mockFileManager.Object.AddFile(_folderInfo.Object, Constants.FOLDER_ValidFileName, fileContent, true, false, Constants.CONTENTTYPE_ValidContentType);
@@ -243,65 +253,7 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
             _mockFileManager.Object.AddFile(_folderInfo.Object, Constants.FOLDER_ValidFileName, fileContent, false, false, Constants.CONTENTTYPE_ValidContentType);
         }
 
-        [Test]
-        public void AddFile_Calls_FolderProvider_AddFile_When_Overwritting_Or_File_Does_Not_Exist()
-        {
-            _folderInfo.Setup(fi => fi.PortalID).Returns(Constants.CONTENT_ValidPortalId);
-            _folderInfo.Setup(fi => fi.FolderID).Returns(Constants.FOLDER_ValidFolderId);
-            _folderInfo.Setup(fi => fi.PhysicalPath).Returns(Constants.FOLDER_ValidFolderPath);
-            _folderInfo.Setup(fi => fi.FolderMappingID).Returns(Constants.FOLDER_ValidFolderMappingID);
-            _folderInfo.Setup(fi => fi.WorkflowID).Returns(Null.NullInteger);
-
-            var fileContent = new MemoryStream();
-
-            _portalController.Setup(pc => pc.HasSpaceAvailable(Constants.CONTENT_ValidPortalId, fileContent.Length)).Returns(true);
-
-            _globals.Setup(g => g.GetSubFolderPath(Constants.FOLDER_ValidFilePath, Constants.CONTENT_ValidPortalId)).Returns(Constants.FOLDER_ValidFolderRelativePath);
-
-            var folderMapping = new FolderMappingInfo { FolderProviderType = Constants.FOLDER_ValidFolderProviderType };
-
-            _folderMappingController.Setup(fmc => fmc.GetFolderMapping(Constants.CONTENT_ValidPortalId, Constants.FOLDER_ValidFolderMappingID)).Returns(folderMapping);
-
-            _mockFolder.Setup(mf => mf.FileExists(_folderInfo.Object, Constants.FOLDER_ValidFileName)).Returns(false);
-            _mockFolder.Setup(mf => mf.AddFile(_folderInfo.Object, Constants.FOLDER_ValidFileName, fileContent)).Verifiable();
-
-            _mockFileManager.Setup(mfm => mfm.IsAllowedExtension(Constants.FOLDER_ValidFileName)).Returns(true);
-            _mockFileManager.Setup(mfm => mfm.UpdateFile(It.IsAny<IFileInfo>(), It.IsAny<Stream>()));
-            _mockFileManager.Setup(mfm => mfm.CreateFileContentItem()).Returns(new ContentItem());
-
-            _contentWorkflowController.Setup(wc => wc.GetWorkflowByID(It.IsAny<int>())).Returns((ContentWorkflow)null);
-
-            _mockData.Setup(
-                md =>
-                md.AddFile(It.IsAny<int>(),
-                           It.IsAny<Guid>(),
-                           It.IsAny<Guid>(),
-                           It.IsAny<string>(),
-                           It.IsAny<string>(),
-                           It.IsAny<long>(),
-                           It.IsAny<int>(),
-                           It.IsAny<int>(),
-                           It.IsAny<string>(),
-                           It.IsAny<string>(),
-                           It.IsAny<int>(),
-                           It.IsAny<int>(),
-                           It.IsAny<string>(),
-                           It.IsAny<DateTime>(),
-                           It.IsAny<string>(),
-                           It.IsAny<DateTime>(),
-                           It.IsAny<DateTime>(),
-                           It.IsAny<bool>(),
-                           It.IsAny<int>()))
-               .Returns(Constants.FOLDER_ValidFileId);
-
-            _mockData.Setup(md => md.UpdateFileLastModificationTime(It.IsAny<int>(), It.IsAny<DateTime>()));
-
-            _mockFileManager.Object.AddFile(_folderInfo.Object, Constants.FOLDER_ValidFileName, fileContent, true, false, Constants.CONTENTTYPE_ValidContentType);
-
-            _mockFolder.Verify();
-        }
-
-        [Test]
+         [Test]
         public void AddFile_Does_Not_Call_FolderProvider_AddFile_When_Not_Overwritting_And_File_Exists()
         {
             _folderInfo.Setup(fi => fi.PortalID).Returns(Constants.CONTENT_ValidPortalId);
@@ -327,7 +279,7 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
             _mockFileManager.Setup(mfm => mfm.UpdateFile(It.IsAny<IFileInfo>(), It.IsAny<Stream>()));
             _mockFileManager.Setup(mfm => mfm.CreateFileContentItem()).Returns(new ContentItem());
 
-            _contentWorkflowController.Setup(wc => wc.GetWorkflowByID(It.IsAny<int>())).Returns((ContentWorkflow)null);
+            _workflowManager.Setup(wc => wc.GetWorkflow(It.IsAny<int>())).Returns((Workflow)null);
 
             _mockData.Setup(
                 md =>
@@ -1037,7 +989,6 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
-                It.IsAny<string>(),
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
@@ -1071,6 +1022,9 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
 
             _fileInfo.Setup(fi => fi.StartDate).Returns(DateTime.Parse(Constants.FOLDER_FileStartDate));
 
+            _folderMappingController.Setup(mp => mp.GetFolderMapping(It.IsAny<int>())).Returns(new FolderMappingInfo() { FolderProviderType = Constants.FOLDER_ValidFolderProviderType });
+            _mockFolder.Setup(fp => fp.GetHashCode(It.IsAny<IFileInfo>(), It.IsAny<Stream>())).Returns(Constants.FOLDER_UnmodifiedFileHash);
+
             _mockFileManager.Object.UpdateFile(_fileInfo.Object, stream);
 
             _fileInfo.VerifySet(fi => fi.Width = 10);
@@ -1088,6 +1042,9 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
 
             _fileInfo.Setup(fi => fi.StartDate).Returns(DateTime.Parse(Constants.FOLDER_FileStartDate));
 
+            _folderMappingController.Setup(mp => mp.GetFolderMapping(It.IsAny<int>())).Returns(new FolderMappingInfo() { FolderProviderType = Constants.FOLDER_ValidFolderProviderType });
+            _mockFolder.Setup(fp => fp.GetHashCode(It.IsAny<IFileInfo>(), It.IsAny<Stream>())).Returns(Constants.FOLDER_UnmodifiedFileHash);
+
             _mockFileManager.Object.UpdateFile(_fileInfo.Object, stream);
 
             _fileInfo.VerifySet(fi => fi.SHA1Hash = Constants.FOLDER_UnmodifiedFileHash);
@@ -1103,6 +1060,9 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
             _mockFileManager.Setup(mfm => mfm.GetHash(_fileInfo.Object)).Returns(Constants.FOLDER_UnmodifiedFileHash);
 
             _fileInfo.Setup(fi => fi.StartDate).Returns(DateTime.Parse(Constants.FOLDER_FileStartDate));
+
+            _folderMappingController.Setup(mp => mp.GetFolderMapping(It.IsAny<int>())).Returns(new FolderMappingInfo() { FolderProviderType = Constants.FOLDER_ValidFolderProviderType });
+            _mockFolder.Setup(fp => fp.GetHashCode(It.IsAny<IFileInfo>(), It.IsAny<Stream>())).Returns(Constants.FOLDER_UnmodifiedFileHash);
 
             _mockFileManager.Object.UpdateFile(_fileInfo.Object, stream);
 
@@ -1153,6 +1113,7 @@ namespace DotNetNuke.Tests.Core.Providers.Folder
         public void GetContentType_Returns_Known_Value_When_Extension_Is_Not_Managed()
         {
             const string notManagedExtension = "asdf609vas21AS:F,l/&%/(%$";
+            _mockFileManager.Setup(mfm => mfm.ContentTypes).Returns(new Dictionary<string, string>());
 
             var contentType = _fileManager.GetContentType(notManagedExtension);
 

@@ -1759,27 +1759,19 @@
     $.fn.dnnResetAutosize = function (options) {
         var minWidth = $(this).data('minwidth') || options.minInputWidth || $(this).width(),
             maxWidth = $(this).data('maxwidth') || options.maxInputWidth || ($(this).closest('.dnnTagsInput').width() - options.inputPadding),
-            input = $(this),
-            testSubject = $('<tester/>').css({
-                position: 'absolute',
-                top: -9999,
-                left: -9999,
-                width: 'auto',
-                fontSize: input.css('fontSize'),
-                fontFamily: input.css('fontFamily'),
-                fontWeight: input.css('fontWeight'),
-                letterSpacing: input.css('letterSpacing'),
-                whiteSpace: 'nowrap'
-            }),
-            testerId = $(this).attr('id') + '_autosize_tester';
-        if (!$('#' + testerId).length > 0) {
-            testSubject.attr('id', testerId);
-            testSubject.appendTo('body');
+	        $input = $(this);
+
+		var left = 0;
+		var $lastSpan = $(this).closest('.dnnTagsInput').find('> span').last();
+		if ($lastSpan.length > 0) {
+			left = $lastSpan.offset().left - $lastSpan.parent().offset().left + $lastSpan.outerWidth();
+		}
+		var availableWidth = maxWidth - left;
+	    if (availableWidth < parseInt(minWidth)) {
+		    availableWidth = maxWidth;
         }
-        input.data('minwidth', minWidth);
-        input.data('maxwidth', maxWidth);
-        input.data('tester_id', testerId);
-        input.css('width', minWidth);
+
+        $input.css('width', availableWidth);
     };
 
     $.fn.dnnAddTag = function (value, options) {
@@ -2299,8 +2291,22 @@
     //fix combobox scroll
     $.dnnComboBoxScroll = function (sender) {
         if ($.support.cssFloat) {
-            $(('#' + sender._clientStateFieldID + ' .rcbScroll').replace('ClientState', 'DropDown')).jScrollPane();
+            var container = $(('#' + sender._clientStateFieldID + ' .rcbScroll').replace('ClientState', 'DropDown'));
+            if (container.data('scrollPane')) {
+                container.data('scrollPane').data('jsp').reinitialise();
+            } else {
+                container.data('scrollPane', container.jScrollPane());
+            }
         }
+    };
+
+    $.dnnComboBoxItemRequested = function (sender) {
+        setTimeout(function() {
+            var container = $(('#' + sender._clientStateFieldID + ' .rcbScroll').replace('ClientState', 'DropDown'));
+            if (container.data('scrollPane')) {
+                container.data('scrollPane').data('jsp').reinitialise();
+            }
+        }, 0);
     };
 
     // fix grid issues 
@@ -2601,8 +2607,13 @@
                 
                 instance._panel.$element.on("onfileuploadcomplete", function (event, data) {
                     if (typeof data == "string") {
+						// for modern browsers
                         data = JSON.parse(data);
-                    }
+                    }else{
+						// for IE8-9						
+						var b = data[0];
+						data = JSON.parse(b.body.innerText);
+					}
                     if (data && data.fileId) {
                         var folderPicker = instance._panel._folderPicker;
                         dnn[settings.foldersComboId].selectedItem(folderPicker.selectedItem());
@@ -4124,7 +4135,7 @@
             var isButton = this.nodeName.toLowerCase() == "img" || this.nodeName.toLowerCase() == "input";
             var script = /return confirm\((['"])([\s\S]*?)\1\)/g.exec(instance.attr("onclick"));
             if (script != null) {
-                var confirmContent = script[2];
+                var confirmContent = script[2].split("\\" + script[1]).join(script[1]);
                 instance.attr("onclick", instance.attr("onclick").replace(script[0], "void(0)")).dnnConfirm({
                     text: confirmContent,
                     isButton: isButton

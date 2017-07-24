@@ -43,7 +43,7 @@ namespace DotNetNuke.Services.Social.Messaging.Internal
         MessageRecipient GetMessageRecipient(int messageId, int userId);
         IList<MessageRecipient> GetMessageRecipients(int messageId);
         void DeleteMessageRecipient(int messageId, int userId);
-
+        void DeleteUserFromConversation(int conversationId, int userId);
 
         void MarkRead(int conversationId, int userId);
         void MarkUnRead(int conversationId, int userId);
@@ -73,6 +73,10 @@ namespace DotNetNuke.Services.Social.Messaging.Internal
         ///<returns>True or False</returns>
         /// <param name="portalId">Portal Id</param>        
         bool AttachmentsAllowed(int portalId);
+
+		///<summary>Whether disable regular users to send message to user/group, default is false.</summary>        
+		/// <param name="portalId">Portal Id</param>    
+	    bool DisablePrivateMessage(int portalId);
 
         #endregion
 
@@ -133,6 +137,10 @@ namespace DotNetNuke.Services.Social.Messaging.Internal
         int CountSentMessages(int userId, int portalId);
 
         int CountArchivedMessages(int userId, int portalId);
+
+        int CountSentConversations(int userId, int portalId);
+
+        int CountArchivedConversations(int userId, int portalId);
 
         #endregion
     }

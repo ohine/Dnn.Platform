@@ -38,9 +38,13 @@ using DotNetNuke.Entities.Host;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Entities.Modules.Actions;
 using DotNetNuke.Entities.Modules.Communications;
+using DotNetNuke.Entities.Portals;
+using DotNetNuke.Entities.Tabs;
+using DotNetNuke.Entities.Tabs.TabVersions;
 using DotNetNuke.Entities.Users;
 using DotNetNuke.Framework;
 using DotNetNuke.Framework.JavaScriptLibraries;
+using DotNetNuke.Security;
 using DotNetNuke.Security.Permissions;
 using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.Localization;
@@ -289,7 +293,7 @@ namespace DotNetNuke.UI.Skins
             //if querystring dnnprintmode=true, controlpanel will not be shown
             if (Request.QueryString["dnnprintmode"] != "true" && !UrlUtils.InPopUp() && Request.QueryString["hidecommandbar"] != "true")
             {
-                if ((ControlPanelBase.IsPageAdminInternal() || ControlPanelBase.IsModuleAdminInternal())) 
+                if (Host.AllowControlPanelToDetermineVisibility || (ControlPanelBase.IsPageAdminInternal() || ControlPanelBase.IsModuleAdminInternal())) 
                 {
                     //ControlPanel processing
                     var controlPanel = ControlUtilities.LoadControl<ControlPanelBase>(this, Host.ControlPanel);
@@ -455,18 +459,36 @@ namespace DotNetNuke.UI.Skins
             bool success = true;
             if (TabPermissionController.CanViewPage())
             {
+                // Versioning checks.
+                if (!TabController.CurrentPage.HasAVisibleVersion)
+                {
+                    Response.Redirect(Globals.NavigateURL(PortalSettings.ErrorPage404, string.Empty, "status=404"));
+                }
+
+                int urlVersion;
+                if (TabVersionUtils.TryGetUrlVersion(out urlVersion))
+                {
+                    if (!TabVersionUtils.CanSeeVersionedPages())
+                    {
+                        AddPageMessage(this, "", Localization.GetString("TabAccess.Error"),
+                            ModuleMessage.ModuleMessageType.YellowWarning);
+                        return true;
+                    }
+
+                    if (TabVersionController.Instance.GetTabVersions(TabController.CurrentPage.TabID).All(tabVersion => tabVersion.Version != urlVersion))
+                    {
+                        Response.Redirect(Globals.NavigateURL(PortalSettings.ErrorPage404, string.Empty, "status=404"));
+                    }
+                }
+
                 //check portal expiry date
                 if (!CheckExpired())
                 {
                     if ((PortalSettings.ActiveTab.StartDate < DateAndTime.Now && PortalSettings.ActiveTab.EndDate > DateAndTime.Now) || TabPermissionController.CanAdminPage() || Globals.IsLayoutMode())
                     {
-                        //dynamically populate the panes with modules
-                        if (PortalSettings.ActiveTab.Modules.Count > 0)
+                        foreach (var objModule in PortalSettingsController.Instance().GetTabModules(PortalSettings))
                         {
-                            foreach (ModuleInfo objModule in PortalSettings.ActiveTab.Modules)
-                            {
-                                success = ProcessModule(objModule);
-                            }
+                            success = ProcessModule(objModule);
                         }
                     }
                     else
@@ -484,7 +506,16 @@ namespace DotNetNuke.UI.Skins
             }
             else
             {
-                Response.Redirect(Globals.AccessDeniedURL(Localization.GetString("TabAccess.Error")), true);
+				//If request localized page which haven't complete translate yet, redirect to default language version.
+	            var redirectUrl = Globals.AccessDeniedURL(Localization.GetString("TabAccess.Error"));
+				Locale defaultLocale = LocaleController.Instance.GetDefaultLocale(PortalSettings.PortalId);
+	            if (PortalSettings.ContentLocalizationEnabled &&
+	                TabController.CurrentPage.CultureCode != defaultLocale.Code)
+	            {
+		            redirectUrl = new LanguageTokenReplace {Language = defaultLocale.Code}.ReplaceEnvironmentTokens("[URL]");
+	            }
+
+				Response.Redirect(redirectUrl, true);
             }
             return success;
         }
@@ -581,7 +612,7 @@ namespace DotNetNuke.UI.Skins
             //Register any error messages on the Skin
             if (Request.QueryString["error"] != null && Host.ShowCriticalErrors)
             {
-                AddPageMessage(this, Localization.GetString("CriticalError.Error"), Server.HtmlEncode(Request.QueryString["error"]), ModuleMessage.ModuleMessageType.RedError);
+                AddPageMessage(this, Localization.GetString("CriticalError.Error"), " ", ModuleMessage.ModuleMessageType.RedError);
 
                 if (UserController.Instance.GetCurrentUserInfo().IsSuperUser)
                 {
@@ -644,8 +675,8 @@ namespace DotNetNuke.UI.Skins
             base.OnPreRender(e);
 
             InvokeSkinEvents(SkinEventType.OnSkinPreRender);
-
-            if (TabPermissionController.CanAddContentToPage() && Globals.IsEditMode() && !UrlUtils.InPopUp())
+            var isSpecialPageMode = UrlUtils.InPopUp() || Request.QueryString["dnnprintmode"] == "true";
+            if (TabPermissionController.CanAddContentToPage() && Globals.IsEditMode() && !isSpecialPageMode)
             {
                 //Register Drag and Drop plugin
                 JavaScript.RequestRegistration(CommonJs.DnnPlugins);
@@ -975,7 +1006,10 @@ namespace DotNetNuke.UI.Skins
             //load assigned skin
             if (skin == null)
             {
-                skinSource = Globals.IsAdminSkin() ? SkinController.FormatSkinSrc(page.PortalSettings.DefaultAdminSkin, page.PortalSettings) : page.PortalSettings.ActiveTab.SkinSrc;
+                //DNN-6170 ensure skin value is culture specific
+                //skinSource = Globals.IsAdminSkin() ? SkinController.FormatSkinSrc(page.PortalSettings.DefaultAdminSkin, page.PortalSettings) : page.PortalSettings.ActiveTab.SkinSrc;
+                skinSource = Globals.IsAdminSkin() ? PortalController.GetPortalSetting("DefaultAdminSkin", page.PortalSettings.PortalId,
+                    Host.DefaultPortalSkin, page.PortalSettings.CultureCode) : page.PortalSettings.ActiveTab.SkinSrc;
                 if (!String.IsNullOrEmpty(skinSource))
                 {
                     skinSource = SkinController.FormatSkinSrc(skinSource, page.PortalSettings);

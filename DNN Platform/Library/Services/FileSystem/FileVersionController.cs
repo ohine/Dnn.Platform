@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 
 using DotNetNuke.Common;
+using DotNetNuke.Common.Internal;
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.ComponentModel;
 using DotNetNuke.Data;
@@ -150,6 +151,13 @@ namespace DotNetNuke.Services.FileSystem
                     new FileInfo { FileId = file.FileId, FileName = GetVersionedFilename(file, newVersion), Folder = file.Folder, FolderId = file.FolderId, FolderMappingID = folderMapping.FolderMappingID, PortalId = folderMapping.PortalID }, 
                     file.FileName);
 
+                //Update the Last Modification Time
+                var providerLastModificationTime = folderProvider.GetLastModificationTime(file);
+                if (file.LastModificationTime != providerLastModificationTime)
+                {
+                    DataProvider.Instance().UpdateFileLastModificationTime(file.FileId, providerLastModificationTime);
+                }
+
                 // Notify File Changed
                 OnFileChanged(file, UserController.Instance.GetCurrentUserInfo().UserID);
             }
@@ -265,9 +273,9 @@ namespace DotNetNuke.Services.FileSystem
         #region helper methods
         private void RegisterEventHandlers()
         {
-            foreach (var value in FileEventHandlersContainer.Instance.FileEventsHandlers.Select(e => e.Value))
+            foreach (var events in EventHandlersContainer<IFileEventHandlers>.Instance.EventHandlers)
             {
-                FileChanged += value.FileOverwritten;
+                FileChanged += events.Value.FileOverwritten;
             }
         }
 

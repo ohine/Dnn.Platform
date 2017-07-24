@@ -388,7 +388,16 @@ namespace DotNetNuke.Modules.Admin.Portals
                     //Validate Portal Alias
                     if (!string.IsNullOrEmpty(strPortalAlias))
                     {
-                        PortalAliasInfo portalAlias = PortalAliasController.Instance.GetPortalAlias(strPortalAlias.ToLower());
+                        PortalAliasInfo portalAlias = null;
+                        foreach (PortalAliasInfo alias in PortalAliasController.Instance.GetPortalAliases().Values)
+                        {
+                            if (String.Equals(alias.HTTPAlias, strPortalAlias, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                portalAlias = alias;
+                                break;
+                            }
+                        }
+
                         if (portalAlias != null)
                         {
                             message = Localization.GetString("DuplicatePortalAlias", LocalResourceFile);
@@ -552,7 +561,7 @@ namespace DotNetNuke.Modules.Admin.Portals
         {
             try
             {
-				txtPortalAlias.Text = optType.SelectedValue == "C" ? Globals.GetDomainName(Request) + @"/" : "";
+                txtPortalAlias.Text = optType.SelectedValue == "C" ? Globals.GetDomainName(Request) + @"/" : "";
             }
             catch (Exception exc) //Module failed to load
             {

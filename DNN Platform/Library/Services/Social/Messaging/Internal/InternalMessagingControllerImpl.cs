@@ -91,6 +91,11 @@ namespace DotNetNuke.Services.Social.Messaging.Internal
             _dataService.DeleteMessageRecipientByMessageAndUser(messageId, userId);
         }
 
+        public virtual void DeleteUserFromConversation(int conversationId, int userId)
+        {
+            _dataService.DeleteUserFromConversation(conversationId, userId);
+        }
+
         public virtual Message GetMessage(int messageId)
         {
             return CBO.FillObject<Message>(_dataService.GetMessage(messageId));
@@ -237,6 +242,13 @@ namespace DotNetNuke.Services.Social.Messaging.Internal
             return GetPortalSettingAsInteger("MessagingRecipientLimit", portalId, 5);
         }
 
+		///<summary>Whether disable regular users to send message to user/group, default is false.</summary>        
+		/// <param name="portalId">Portal Id</param>        
+		public virtual bool DisablePrivateMessage(int portalId)
+		{
+			return GetPortalSetting("DisablePrivateMessage", portalId, "N") == "Y";
+		}
+
         #endregion
 
         #region Get View APIs
@@ -362,6 +374,16 @@ namespace DotNetNuke.Services.Social.Messaging.Internal
         public virtual int CountArchivedMessages(int userId, int portalId)
         {
             return _dataService.CountArchivedMessages(userId, portalId);
+        }
+
+        public virtual int CountSentConversations(int userId, int portalId)
+        {
+            return _dataService.CountSentConversations(userId, portalId);
+        }
+
+        public virtual int CountArchivedConversations(int userId, int portalId)
+        {
+            return _dataService.CountArchivedConversations(userId, portalId);
         }
         
         #endregion

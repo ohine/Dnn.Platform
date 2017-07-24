@@ -90,13 +90,22 @@ namespace DotNetNuke.UI.Skins.Controls
                 }
                 returnUrl = HttpUtility.UrlEncode(returnUrl);
 
-                string url = Globals.LoginURL(returnUrl, (Request.QueryString["override"] != null));
+                return Globals.LoginURL(returnUrl, (Request.QueryString["override"] != null));
+            }
+        }
+
+		protected string LoginUrlForClickEvent
+		{
+			get
+			{
+				var url = LoginUrl;
 
                 if (UsePopUp)
                 {
-                    url = "return " + UrlUtils.PopUpUrl(url, this, PortalSettings, true, false, 300, 650);
+					return "return " + UrlUtils.PopUpUrl(LoginUrl, this, PortalSettings, true, false, 300, 650);
                 }
-                return url;
+
+				return string.Empty;
             }
         }
 
@@ -114,13 +123,20 @@ namespace DotNetNuke.UI.Skins.Controls
         {
             get
             {
-                string url = Globals.RegisterURL(HttpUtility.UrlEncode(Globals.NavigateURL()), Null.NullString);
+                return Globals.RegisterURL(HttpUtility.UrlEncode(Globals.NavigateURL()), Null.NullString);
+            }
+        }
 
+		protected string RegisterUrlForClickEvent
+		{
+			get
+			{
                 if (UsePopUp)
                 {
-                    url = "return " + UrlUtils.PopUpUrl(url, this, PortalSettings, true, false, 600, 950);
+					return "return " + UrlUtils.PopUpUrl(RegisterUrl, this, PortalSettings, true, false, 600, 950);
                 }
-                return url;
+
+				return string.Empty;
             }
         }
 
@@ -143,10 +159,13 @@ namespace DotNetNuke.UI.Skins.Controls
 
             registerLink.NavigateUrl = RegisterUrl;
             loginLink.NavigateUrl = LoginUrl;
+
+            if (PortalSettings.UserId > 0)
+            {
             viewProfileLink.NavigateUrl = Globals.UserProfileURL(PortalSettings.UserId);
             viewProfileImageLink.NavigateUrl = Globals.UserProfileURL(PortalSettings.UserId);
             logoffLink.NavigateUrl = Globals.NavigateURL(PortalSettings.ActiveTab.TabID, "Logoff");
-            editProfileLink.NavigateUrl = Globals.NavigateURL(PortalSettings.UserTabId, "Profile", "userId=" + PortalSettings.UserId, "pageno=3");
+                editProfileLink.NavigateUrl = Globals.NavigateURL(PortalSettings.UserTabId, "Profile", "userId=" + PortalSettings.UserId, "pageno=2");
             accountLink.NavigateUrl = Globals.NavigateURL(PortalSettings.UserTabId, "Profile", "userId=" + PortalSettings.UserId, "pageno=1");
             messagesLink.NavigateUrl = Globals.NavigateURL(GetMessageTab(), "", string.Format("userId={0}", PortalSettings.UserId));
             notificationsLink.NavigateUrl = Globals.NavigateURL(GetMessageTab(), "", string.Format("userId={0}", PortalSettings.UserId), "view=notifications", "action=notifications");
@@ -154,7 +173,7 @@ namespace DotNetNuke.UI.Skins.Controls
             var unreadMessages = InternalMessagingController.Instance.CountUnreadMessages(PortalSettings.UserId, PortalSettings.PortalId);
             var unreadAlerts = NotificationsController.Instance.CountNotifications(PortalSettings.UserId, PortalSettings.PortalId);
 
-            if(unreadMessages > 0)
+                if (unreadMessages > 0)
             {
                 messageCount.Text = unreadMessages.ToString(CultureInfo.InvariantCulture);
                 messageCount.Visible = true;
@@ -172,20 +191,21 @@ namespace DotNetNuke.UI.Skins.Controls
                 notificationCount.Visible = true;
             }
 
+                profilePicture.ImageUrl = AvatarImageUrl;
+                profilePicture.AlternateText = Localization.GetString("ProfilePicture", Localization.GetResourceFile(this, MyFileName));
+            }
 
             if (UsePopUp)
             {
-                registerLink.Attributes.Add("onclick", RegisterUrl);
-                loginLink.Attributes.Add("onclick", LoginUrl);
+                registerLink.Attributes.Add("onclick", RegisterUrlForClickEvent);
+                loginLink.Attributes.Add("onclick", LoginUrlForClickEvent);
             }
 
-            profilePicture.ImageUrl = AvatarImageUrl;
-            profilePicture.AlternateText = Localization.GetString("ProfilePicture", Localization.GetResourceFile(this, MyFileName));
         }
 
         private int GetMessageTab()
         {
-            var cacheKey = string.Format("MessageCenterTab:{0}", PortalSettings.PortalId);
+            var cacheKey = string.Format("MessageCenterTab:{0}:{1}", PortalSettings.PortalId, PortalSettings.CultureCode);
             var messageTabId = DataCache.GetCache<int>(cacheKey);
             if (messageTabId > 0)
                 return messageTabId;

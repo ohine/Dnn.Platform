@@ -7,12 +7,12 @@
     <div id="ControlBar">
         <div class="ControlContainer">
             <div class="ServiceIcon professional">
-                <asp:Image ID="conrolbar_logo" runat="server" AlternateText="DNNlogo" ViewStateMode="Disabled" />                
+                <asp:Image ID="conrolbar_logo" runat="server" AlternateText="DNNlogo" ViewStateMode="Disabled" />
                 <%= GetUpgradeIndicator() %>
             </div>
             <!-- close ServiceIcon -->
             <ul id="ControlNav">
-                <% if (UserController.Instance.GetCurrentUserInfo().IsInRole("Administrators"))
+                <% if (UserController.Instance.GetCurrentUserInfo().IsInRole(PortalSettings.AdministratorRoleName))
                    {%>
                 <li><a href="<%= GetTabURL("Admin", false, Null.NullInteger) %>">
                     <%= GetString("Tool.Admin.Text") %></a>
@@ -170,7 +170,7 @@
                    </ul>
                 </li>
                <% } %>
-               
+
                 <% if (TabPermissionController.CanAddPage() || TabPermissionController.CanCopyPage() || TabPermissionController.CanImportPage())
                    {%>
                 <li><a href="#">
@@ -181,19 +181,19 @@
                         <li><a href="<%= BuildToolUrl("NewPage", false, "", "", "", true) %>" class="ControlBar_PopupLink">
                             <%= GetString("Tool.AddNewPage.Text") %></a></li>
                         <% } %>
-                        
+
                         <% if (TabPermissionController.CanCopyPage())
                            {%>
                         <li><a href="<%= BuildToolUrl("CopyPage", false, "", "", "", true) %>" class="ControlBar_PopupLink">
                             <%= GetString("Tool.CopyPage.Text") %></a></li>
                         <% } %>
-                        
+
                         <% if (TabPermissionController.CanManagePage() && ActiveTabHasChildren() && !PortalSettings.ActiveTab.IsSuperTab)
                            {%>
                         <li><a href="javascript:void(0)" id="controlBar_CopyPermissionsToChildren">
                             <%= GetString("Tool.CopyPermissionsToChildren.Text") %></a></li>
                         <% } %>
-                        
+
                         <% if (TabPermissionController.CanImportPage())
                            {%>
                         <li><a href="<%= BuildToolUrl("ImportPage", false, "", "", "", true) %>" class="ControlBar_PopupLink">
@@ -202,8 +202,8 @@
                     </ul>
                 </li>
                 <% } %>
-                
-                 <% if (UserController.Instance.GetCurrentUserInfo().IsInRole("Administrators"))
+
+                 <% if (UserController.Instance.GetCurrentUserInfo().IsInRole(PortalSettings.AdministratorRoleName))
                     {%>
                 <li><a href="javascript:void(0)">
                     <%= GetString("Tool.Users.Text") %></a>
@@ -228,7 +228,7 @@
                 </li>
                 <% } %>
             </ul>
-            <ul id="CustomMenuItems" runat="server">                
+            <ul id="CustomMenuItems" runat="server">
             </ul>
            <% if (TabPermissionController.CanAddContentToPage() || TabPermissionController.CanManagePage() || TabPermissionController.CanAdminPage() ||
                   TabPermissionController.CanExportPage() || TabPermissionController.CanDeletePage()  || IsModuleAdmin())
@@ -242,15 +242,15 @@
                            {%>
                         <li class="controlBar_BlueEditPageBtn"><a href="javascript:void(0)" id="ControlBar_EditPage">
                             <%= GetEditButtonLabel() %></a></li>
-                      
+
                         <li>
                             <input type="checkbox" id="ControlBar_StayInEditMode" <%= CheckedWhenStayInEditMode() %> /><label
                                 for="ControlBar_StayInEditMode"><%= GetString("Tool.StayInEditMode.Text") %></label></li>
-                       
+
                         <li class="controlBar_EditPageSection">
                             <input type="checkbox" id="ControlBar_ViewInLayout" <%= CheckedWhenInLayoutMode() %> /><label
                                 for="ControlBar_ViewInLayout"><%= GetString("Tool.LayoutMode.Text") %></label></li>
-                      
+
                         <li><a href="javascript:void(0)" id="ControlBar_ViewInPreview">
                             <%= GetString("Tool.MobilePreview.Text") %></a></li>
                         <% } %>
@@ -258,7 +258,7 @@
                            {%>
                         <li><a href="<%= BuildToolUrl("PageSettings", false, "", "", "", true) %>" class="ControlBar_PopupLink">
                             <%= GetString("Tool.PageSettings.Text") %></a></li>
-                        
+
                         <li><a href="<%= BuildToolUrl("PageTemplate", false, "", "", "", true) %>" class="ControlBar_PopupLink">
                             <%= GetString("Tool.ManageTemplate.Text") %></a></li>
                             <% if (PortalSettings.ContentLocalizationEnabled)
@@ -287,15 +287,15 @@
                         <li><a href="<%= BuildToolUrl("PublishPage", false, "", "", "", true) %>" id="ControlBar_PublishPage">
                             <%= GetPublishActionText()%></a></li>
                         <% } %>
-                       
+
                     </ul>
                     <div class="dnnClear">
                     </div>
                 </li>
             </ul>
-             <%}%>            
+             <%}%>
         </div>
-        
+
          <% if (TabPermissionController.HasTabPermission("EDIT,CONTENT,MANAGE") && PortalSettings.UserMode == PortalSettings.Mode.Edit)
             {%>
         <div id="ControlBar_Module_AddNewModule" class="ControlModulePanel">
@@ -306,10 +306,10 @@
                     OnClientSelectedIndexChanged="dnn.controlBar.ControlBar_Module_CategoryList_Changed" ViewStateMode="Disabled" />
                 <div class="search-container">
                     <div class="search-input-container">
-                        <input type="text" id="ControlBar_SearchModulesInput" class="search-input"/>                    
+                        <input type="text" id="ControlBar_SearchModulesInput" placeholder="<%= GetString("SearchModules.Text") %>" class="search-input"/>
                     </div>
                     <a href="javascript:void(0);" title="<%= GetString("SearchModules.Text") %>" class="search-button"></a>
-                    <a href="javascript:void(0);" title="<%= GetString("ClearSearchModules.Text") %>" class="clear-button"></a>                    
+                    <a href="javascript:void(0);" title="<%= GetString("ClearSearchModules.Text") %>" class="clear-button"></a>
                 </div>
                 <a class="controlBar_CloseAddModules"><%= GetString("Cancel.Text") %></a>
             </div>
@@ -322,10 +322,10 @@
                 <p id="ControlBar_ModuleListWaiter_LoadingMessage">
                     <%= GetString("LoadingModule.Text")%>
                 </p>
-            </div>            
-            <div id="ControlBar_ModuleListHolder_NewModule" class="ControlBar_ModuleListHolder">                
+            </div>
+            <div id="ControlBar_ModuleListHolder_NewModule" class="ControlBar_ModuleListHolder">
                 <ul class="ControlBar_ModuleList">
-                </ul>                
+                </ul>
             </div>
             <div class="controlBar_ModuleListScrollDummy">
                 <div class="controlBar_ModuleListScrollDummy_Content"></div>
@@ -406,34 +406,34 @@
     	visibilityComboId: '<%= VisibilityLst.ClientID %>',
     	makeCopyCheckboxId: 'ControlBar_Module_chkCopyModule',
 		pagePickerId: '<%= PageList.ClientID %>',
-        yesText: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(Localization.GetString("Yes.Text", Localization.SharedResourceFile)) %>',
-        noText: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(Localization.GetString("No.Text", Localization.SharedResourceFile)) %>',
-        titleText: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(Localization.GetString("Confirm.Text", Localization.SharedResourceFile)) %>',
-        deleteText: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString( GetButtonConfirmMessage("DeletePage") )%>',
-        publishConfirmHeader: '<%= GetPublishConfirmHeader()%>',
-        publishConfirmText: '<%= GetPublishConfirmText()%>',
-        publishedPage: '<%= GetTabPublishing()%>',
-        copyPermissionsToChildrenText: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(GetString("Tool.CopyPermissionsToChildrenPageEditor.Confirm")) %>',
-            
-        dragModuleToolTip: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(GetString("DragModuleToolTip.Text")) %>',
-            
-        loginUrl: '<%= LoginUrl %>',
-		
-        selectPageText: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(GetString("SelectPage.Text")) %>',
-        moduleShareableTitle: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(GetString("ShareableWarningTitle")) %>',		
+        yesText: '<%= Localization.GetSafeJSString("Yes.Text", Localization.SharedResourceFile) %>',
+        noText: '<%= Localization.GetSafeJSString("No.Text", Localization.SharedResourceFile) %>',
+        titleText: '<%= Localization.GetSafeJSString("Confirm.Text", Localization.SharedResourceFile) %>',
+        deleteText: '<%= Localization.GetSafeJSString(GetButtonConfirmMessage("DeletePage"))%>',
+        publishConfirmHeader: '<%= Localization.GetSafeJSString(GetPublishConfirmHeader())%>',
+        publishConfirmText: '<%= Localization.GetSafeJSString(GetPublishConfirmText())%>',
+        publishedPage: '<%= Localization.GetSafeJSString(GetTabPublishing())%>',
+        copyPermissionsToChildrenText: '<%= Localization.GetSafeJSString(GetString("Tool.CopyPermissionsToChildrenPageEditor.Confirm")) %>',
 
-        removeBookmarksTip: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(GetString("Tool.RemoveFromBookmarks.ToolTip")) %>',
-        addToBookmarksTip: '<%= DotNetNuke.UI.Utilities.ClientAPI.GetSafeJSString(GetString("Tool.AddToBookmarks.ToolTip")) %>',
-        
+        dragModuleToolTip: '<%= Localization.GetSafeJSString(GetString("DragModuleToolTip.Text")) %>',
+
+        loginUrl: '<%= LoginUrl %>',
+
+        selectPageText: '<%= Localization.GetSafeJSString(GetString("SelectPage.Text")) %>',
+        moduleShareableTitle: '<%= Localization.GetSafeJSString(GetString("ShareableWarningTitle")) %>',
+
+        removeBookmarksTip: '<%= Localization.GetSafeJSString(GetString("Tool.RemoveFromBookmarks.ToolTip")) %>',
+        addToBookmarksTip: '<%= Localization.GetSafeJSString(GetString("Tool.AddToBookmarks.ToolTip")) %>',
+
         bookmarkModuleCategory: '<%= BookmarkModuleCategory%>',
         bookmarkedModuleKeys: '<%= BookmarkedModuleKeys%>',
         defaultCategoryValue: 'All',
-        
+
         loadingModulesId: 'ControlBar_ModuleListWaiter_LoadingMessage',
-        loadingModulesMessage: '<%= GetString("LoadingModule.Text")%>',
-        loadingModulesOnNoDefaultCategoryMessage: "<%= GetString("LoadingModuleOnNoDefaultCategory.Text")%>"
+        loadingModulesMessage: '<%= Localization.GetSafeJSString(GetString("LoadingModule.Text"))%>',
+        loadingModulesOnNoDefaultCategoryMessage: "<%= Localization.GetSafeJSString(GetString("LoadingModuleOnNoDefaultCategory.Text"))%>"
     };
-    
+
     $(function() {
         $('a#ControlBar_ViewInPreview').click(function() {
             <%=PreviewPopup() %>;

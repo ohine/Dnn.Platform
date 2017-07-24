@@ -49,7 +49,6 @@ using DotNetNuke.Services.Authentication.OAuth;
 using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.Localization;
 using DotNetNuke.Services.Mail;
-using DotNetNuke.Services.Messaging;
 using DotNetNuke.Services.Messaging.Data;
 using DotNetNuke.UI.Skins.Controls;
 using DotNetNuke.UI.UserControls;
@@ -227,7 +226,9 @@ namespace DotNetNuke.Modules.Admin.Authentication
 				//replace language parameter in querystring, to make sure that user will see page in correct language
 				if (UserId != -1 && User != null)
 				{
-					if (!String.IsNullOrEmpty(User.Profile.PreferredLocale) && User.Profile.PreferredLocale != CultureInfo.CurrentCulture.Name)
+					if (!String.IsNullOrEmpty(User.Profile.PreferredLocale) 
+							&& User.Profile.PreferredLocale != CultureInfo.CurrentCulture.Name
+							&& LocaleEnabled(User.Profile.PreferredLocale))
 					{
                         redirectURL = ReplaceLanguage(redirectURL, CultureInfo.CurrentCulture.Name, User.Profile.PreferredLocale);
 					}
@@ -868,7 +869,7 @@ namespace DotNetNuke.Modules.Admin.Authentication
                     }
 
 					//Set the Page Culture(Language) based on the Users Preferred Locale
-					if ((objUser.Profile != null) && (objUser.Profile.PreferredLocale != null))
+					if ((objUser.Profile != null) && (objUser.Profile.PreferredLocale != null) && LocaleEnabled(objUser.Profile.PreferredLocale))
 					{
 						Localization.SetLanguage(objUser.Profile.PreferredLocale);
 					}
@@ -887,7 +888,11 @@ namespace DotNetNuke.Modules.Admin.Authentication
 			        var redirectUrl = RedirectURL;
 
                     //Clear the cookie
-                    HttpContext.Current.Response.Cookies.Set(new HttpCookie("returnurl", "") { Expires = DateTime.Now.AddDays(-1) });
+                    HttpContext.Current.Response.Cookies.Set(new HttpCookie("returnurl", "")
+                    {
+                        Expires = DateTime.Now.AddDays(-1),
+                        Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/")
+                    });
 
                     Response.Redirect(redirectUrl, true);
 					break;
@@ -904,9 +909,11 @@ namespace DotNetNuke.Modules.Admin.Authentication
 					pnlProceed.Visible = true;
 					break;
 				case UserValidStatus.UPDATEPASSWORD:
-					AddModuleMessage("PasswordUpdate", ModuleMessage.ModuleMessageType.YellowWarning, true);
-					PageNo = 2;
-					pnlProceed.Visible = false;
+					//AddModuleMessage("PasswordUpdate", ModuleMessage.ModuleMessageType.YellowWarning, true);
+					//PageNo = 2;
+					//pnlProceed.Visible = false;
+                    var redirTo = string.Format("/default.aspx?ctl=PasswordReset&resetToken={0}&forced=true", objUser.PasswordResetToken);
+			        Response.Redirect(redirTo);
 					break;
 				case UserValidStatus.UPDATEPROFILE:
 					//Save UserID in ViewState so that can update profile later.
@@ -931,6 +938,11 @@ namespace DotNetNuke.Modules.Admin.Authentication
                 PortalSettings.UserRegistration == (int)Globals.PortalRegistrationType.VerifiedRegistration &&
                 !string.IsNullOrEmpty(Request.QueryString["verificationcode"]);
         }
+
+		private bool LocaleEnabled(string locale)
+		{
+			return LocaleController.Instance.GetLocales(PortalSettings.PortalId).ContainsKey(locale);
+		}
 
         #endregion
 

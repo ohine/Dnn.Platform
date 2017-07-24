@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,7 +13,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DotNetNuke.Modules.DigitalAssets</RootNamespace>
     <AssemblyName>DotNetNuke.Modules.DigitalAssets</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
@@ -31,6 +31,7 @@
     <NoWarn>1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <LangVersion>default</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,6 +42,7 @@
     <DocumentationFile>bin\DotNetNuke.Modules.DigitalAssets.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <Extension>zip</Extension>
@@ -52,12 +54,14 @@
     <NoWarn>1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <OutputPath>bin\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <OutputPath>bin\</OutputPath>
     <NoWarn>1591</NoWarn>
     <DocumentationFile>DotNetNuke.Modules.DigitalAssets.XML</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -65,17 +69,19 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="DotNetNuke.WebUtility">
-      <HintPath>..\..\Controls\DotNetNuke.WebUtility\bin\DotNetNuke.WebUtility.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Net.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="Telerik.Web.UI">
       <HintPath>..\..\Components\Telerik\bin\Telerik.Web.UI.dll</HintPath>
     </Reference>
@@ -86,11 +92,9 @@
     </Compile>
     <Compile Include="ClientDialog.cs" />
     <Compile Include="Components\Controllers\DigitalAssetsSettingsRepository.cs" />
-    <Compile Include="Components\Controllers\FolderPathComparer.cs" />
     <Compile Include="Components\Controllers\IDigitalAssetsControllerData.cs" />
     <Compile Include="Components\Controllers\Models\ExtractedItemViewModel.cs" />
     <Compile Include="Components\Controllers\Models\PreviewInfoViewModel.cs" />
-    <Compile Include="Components\Controllers\Models\SortProperties.cs" />
     <Compile Include="Components\Controllers\Models\ZipExtractViewModel.cs" />
     <Compile Include="Components\Controllers\Models\FolderMappingViewModel.cs" />
     <Compile Include="Components\Controllers\Models\FolderViewModel.cs" />
@@ -105,6 +109,7 @@
     <Compile Include="Components\ExtensionPoint\PropertiesTabContentControl.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Components\ExtensionPoint\ToolBarButton\UnlinkToolbarButtonExtensionPoint.cs" />
     <Compile Include="Components\ExtensionPoint\ToolBarButton\ManageFolderTypesToolBarButtonExtensionPoint.cs" />
     <Compile Include="Components\ExtensionPoint\ToolBarButton\UnzipFileToolBarButtonExtensionPoint.cs" />
     <Compile Include="Components\ExtensionPoint\ToolBarButton\DefaultMenuButtonItem.cs" />
@@ -189,6 +194,8 @@
     <Compile Include="Services\ContentServiceController.cs" />
     <Compile Include="Services\DamExceptionFilterAttribute.cs" />
     <Compile Include="Services\DownloadServiceController.cs" />
+    <Compile Include="Services\Models\MappedPathSubFoldersCountRequest.cs" />
+    <Compile Include="Services\Models\UnlinkFolderRequest.cs" />
     <Compile Include="Services\Models\SearchFolderContentRequest.cs" />
     <Compile Include="Services\Models\GetUrlRequest.cs" />
     <Compile Include="Services\Models\SynchronizeFolderRequest.cs" />
@@ -266,6 +273,10 @@
       <Project>{ddf18e36-41a0-4ca7-a098-78ca6e6f41c1}</Project>
       <Name>DotNetNuke.Instrumentation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\DotNetNuke.WebUtility\DotNetNuke.WebUtility.vbproj">
+      <Project>{4912f062-f8a8-4f9d-8f8e-244ebee1acbd}</Project>
+      <Name>DotNetNuke.WebUtility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\DotNetNuke.Web\DotNetNuke.Web.csproj">
       <Project>{8DA31B98-5E8E-4243-8967-D4CF7DC622CB}</Project>
       <Name>DotNetNuke.Web</Name>
@@ -306,6 +317,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Module.build" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="web.config" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
   </ItemGroup>
   <ProjectExtensions>
     <VisualStudio>

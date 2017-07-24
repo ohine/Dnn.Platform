@@ -26,7 +26,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -73,6 +75,7 @@ namespace DotNetNuke.Security.Membership
         #region Private Members
 
         private readonly DataProvider _dataProvider = DataProvider.Instance();
+        private readonly IEnumerable<string> _socialAuthProviders = new  List<string>() {"Facebook", "Google", "Twitter", "LiveID"}; 
 
         #endregion
 
@@ -510,8 +513,6 @@ namespace DotNetNuke.Security.Membership
                             PortalID = Null.SetNullInteger(dr["PortalID"]),
                             IsSuperUser = Null.SetNullBoolean(dr["IsSuperUser"]),
                             UserID = Null.SetNullInteger(dr["UserID"]),
-                            FirstName = Null.SetNullString(dr["FirstName"]),
-                            LastName = Null.SetNullString(dr["LastName"]),
                             DisplayName = Null.SetNullString(dr["DisplayName"]),
                             LastIPAddress = Null.SetNullString(dr["LastIPAddress"])
                         };
@@ -847,8 +848,9 @@ namespace DotNetNuke.Security.Membership
         public override UserCreateStatus CreateUser(ref UserInfo user)
         {
             UserCreateStatus createStatus = ValidateForProfanity(user);
+            EventLogController aLog = new EventLogController();
             string service = HttpContext.Current != null ? HttpContext.Current.Request.Params["state"] : string.Empty;
-
+            
             if (createStatus == UserCreateStatus.AddUser)
             {
                 ValidateForDuplicateDisplayName(user, ref createStatus);
@@ -1706,16 +1708,35 @@ namespace DotNetNuke.Security.Membership
                 //Check in a verified situation whether the user is Approved
                 if (user.Membership.Approved == false && user.IsSuperUser == false)
                 {
-                    //Check Verification code
-                    var ps = new PortalSecurity();
-                    if (verificationCode == ps.EncryptString(portalId + "-" + user.UserID, Config.GetDecryptionkey()))
+                    
+                    //Check Verification code (skip for FB, Google, Twitter, LiveID as it has no verification code)
+                    if (_socialAuthProviders.Contains(authType) && String.IsNullOrEmpty(verificationCode))
                     {
+                        if (PortalController.Instance.GetCurrentPortalSettings().UserRegistration ==
+                            (int) Globals.PortalRegistrationType.PublicRegistration)
+                        {
+                        user.Membership.Approved = true;
+                        UserController.UpdateUser(portalId, user);
                         UserController.ApproveUser(user);
                     }
                     else
                     {
-                        loginStatus = UserLoginStatus.LOGIN_USERNOTAPPROVED;
+                            loginStatus = UserLoginStatus.LOGIN_USERNOTAPPROVED;
+                        }
                     }
+                    else
+                    {
+                        var ps = new PortalSecurity();
+                        if (verificationCode == ps.EncryptString(portalId + "-" + user.UserID, Config.GetDecryptionkey()))
+                        {
+                            UserController.ApproveUser(user);
+                        }
+                        else
+                        {
+                            loginStatus = UserLoginStatus.LOGIN_USERNOTAPPROVED;
+                        }
+                    }
+
                 }
 
                 //Verify User Credentials

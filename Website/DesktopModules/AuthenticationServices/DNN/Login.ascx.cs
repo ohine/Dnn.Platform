@@ -22,9 +22,7 @@
 
 using System;
 using System.Linq;
-using System.Net;
 using System.Web;
-
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.Entities.Host;
 using DotNetNuke.Entities.Portals;
@@ -94,6 +92,59 @@ namespace DotNetNuke.Modules.Admin.Authentication
 				return AuthenticationConfig.GetConfig(PortalId).Enabled;
 			}
 		}
+		
+		protected new string RedirectURL
+        {
+            get
+            {
+                string _RedirectURL = "";
+
+				if (PortalSettings.Registration.RedirectAfterRegistration > 0) //redirect to after registration page
+                {
+					_RedirectURL = Globals.NavigateURL(PortalSettings.Registration.RedirectAfterRegistration);
+                }
+                else
+                {
+
+					if (PortalSettings.Registration.RedirectAfterRegistration <= 0)
+                {
+                    if (Request.QueryString["returnurl"] != null)
+                    {
+                        //return to the url passed to register
+                        _RedirectURL = HttpUtility.UrlDecode(Request.QueryString["returnurl"]);
+                        //redirect url should never contain a protocol ( if it does, it is likely a cross-site request forgery attempt )
+                        if (_RedirectURL.Contains("://") &&
+                            !_RedirectURL.StartsWith(Globals.AddHTTP(PortalSettings.PortalAlias.HTTPAlias),
+                                StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            _RedirectURL = "";
+                        }
+                        if (_RedirectURL.Contains("?returnurl"))
+                        {
+                            string baseURL = _RedirectURL.Substring(0,
+                                _RedirectURL.IndexOf("?returnurl", StringComparison.Ordinal));
+                            string returnURL =
+                                _RedirectURL.Substring(_RedirectURL.IndexOf("?returnurl", StringComparison.Ordinal) + 11);
+
+                            _RedirectURL = string.Concat(baseURL, "?returnurl", HttpUtility.UrlEncode(returnURL));
+                        }
+                    }
+                    if (String.IsNullOrEmpty(_RedirectURL))
+                    {
+                        //redirect to current page 
+                        _RedirectURL = Globals.NavigateURL();
+                    }
+                }
+                else //redirect to after registration page
+                {
+					_RedirectURL = Globals.NavigateURL(PortalSettings.Registration.RedirectAfterRegistration);
+                }
+                }
+
+                return _RedirectURL;
+            }
+        
+		}
 
 		#endregion
 
@@ -104,6 +155,8 @@ namespace DotNetNuke.Modules.Admin.Authentication
 			base.OnLoad(e);
 
 			cmdLogin.Click += OnLoginClick;
+			
+			cmdCancel.Click += OnCancelClick;
 
 			ClientAPI.RegisterKeyCapture(Parent, cmdLogin, 13);
 
@@ -112,6 +165,12 @@ namespace DotNetNuke.Modules.Admin.Authentication
                 liRegister.Visible = false;
             }
             lblLogin.Text = Localization.GetSystemMessage(PortalSettings, "MESSAGE_LOGIN_INSTRUCTIONS");
+
+            if (!string.IsNullOrEmpty(Response.Cookies["USERNAME_CHANGED"].Value))
+            {
+                txtUsername.Text = Response.Cookies["USERNAME_CHANGED"].Value;
+                DotNetNuke.UI.Skins.Skin.AddModuleMessage(this, Localization.GetSystemMessage(PortalSettings, "MESSAGE_USERNAME_CHANGED_INSTRUCTIONS"), ModuleMessage.ModuleMessageType.BlueInfo);
+            }
 
             var returnUrl = Globals.NavigateURL();
             string url;
@@ -139,11 +198,21 @@ namespace DotNetNuke.Modules.Admin.Authentication
             //see if the portal supports persistant cookies
             chkCookie.Visible = Host.RememberCheckbox;
 
-            url = Globals.NavigateURL("SendPassword", "returnurl=" + returnUrl);
-            passwordLink.NavigateUrl = url;
-            if (PortalSettings.EnablePopUps)
+
+
+            // no need to show password link if feature is disabled, let's check this first
+            if (MembershipProviderConfig.PasswordRetrievalEnabled || MembershipProviderConfig.PasswordResetEnabled)
             {
-                passwordLink.Attributes.Add("onclick", "return " + UrlUtils.PopUpUrl(url, this, PortalSettings, true, false, 300, 650));
+                url = Globals.NavigateURL("SendPassword", "returnurl=" + returnUrl);
+                passwordLink.NavigateUrl = url;
+                if (PortalSettings.EnablePopUps)
+                {
+                    passwordLink.Attributes.Add("onclick", "return " + UrlUtils.PopUpUrl(url, this, PortalSettings, true, false, 300, 650));
+                }
+            }
+            else
+            {
+                passwordLink.Visible = false;
             }
 
 
@@ -158,11 +227,12 @@ namespace DotNetNuke.Modules.Admin.Authentication
 
                     var verificationCode = Request.QueryString["verificationcode"];
 
+
                     try
                     {
                         UserController.VerifyUser(verificationCode.Replace(".", "+").Replace("-", "/").Replace("_", "="));
 
-                        var redirectTabId = Convert.ToInt32(GetSetting(PortalId, "Redirect_AfterRegistration"));
+						var redirectTabId = PortalSettings.Registration.RedirectAfterRegistration;
 
 	                    if (Request.IsAuthenticated)
 	                    {
@@ -174,7 +244,7 @@ namespace DotNetNuke.Modules.Admin.Authentication
                             {
                                 var redirectUrl = Globals.NavigateURL(redirectTabId, string.Empty, "VerificationSuccess=true");
                                 redirectUrl = redirectUrl.Replace(Globals.AddHTTP(PortalSettings.PortalAlias.HTTPAlias), string.Empty);
-                                Response.Cookies.Add(new HttpCookie("returnurl", redirectUrl));
+                                Response.Cookies.Add(new HttpCookie("returnurl", redirectUrl) { Path = (!string.IsNullOrEmpty(Globals.ApplicationPath) ? Globals.ApplicationPath : "/") });
                             }
 
 		                    UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("VerificationSuccess", LocalResourceFile), ModuleMessage.ModuleMessageType.GreenSuccess);
@@ -228,15 +298,15 @@ namespace DotNetNuke.Modules.Admin.Authentication
 				}
 			}
 
-		    var registrationType = PortalController.GetPortalSettingAsInteger("Registration_RegistrationFormType", PortalId, 0);
+			var registrationType = PortalSettings.Registration.RegistrationFormType;
 		    bool useEmailAsUserName;
             if (registrationType == 0)
             {
-                useEmailAsUserName = PortalController.GetPortalSettingAsBoolean("Registration_UseEmailAsUserName", PortalId, false);
+				useEmailAsUserName = PortalSettings.Registration.UseEmailAsUserName;
             }
             else
             {
-                var registrationFields = PortalController.GetPortalSetting("Registration_RegistrationFields", PortalId, String.Empty);
+				var registrationFields = PortalSettings.Registration.RegistrationFields;
                 useEmailAsUserName = !registrationFields.Contains("Username");
             }
 
@@ -250,11 +320,23 @@ namespace DotNetNuke.Modules.Admin.Authentication
 			if ((UseCaptcha && ctlCaptcha.IsValid) || !UseCaptcha)
 			{
 				var loginStatus = UserLoginStatus.LOGIN_FAILURE;
-                string userName = new PortalSecurity().InputFilter(txtUsername.Text,
-                                                         PortalSecurity.FilterFlag.NoScripting |
-                                                         PortalSecurity.FilterFlag.NoAngleBrackets |
-                                                         PortalSecurity.FilterFlag.NoMarkup);
-                var objUser = UserController.ValidateUser(PortalId, userName, txtPassword.Text, "DNN", string.Empty, PortalSettings.PortalName, IPAddress, ref loginStatus);
+				string userName = new PortalSecurity().InputFilter(txtUsername.Text, 
+										PortalSecurity.FilterFlag.NoScripting | 
+                                        PortalSecurity.FilterFlag.NoAngleBrackets | 
+                                        PortalSecurity.FilterFlag.NoMarkup);
+
+                //DNN-6093
+                //check if we use email address here rather than username
+                if(PortalController.GetPortalSettingAsBoolean("Registration_UseEmailAsUserName", PortalId, false))
+                {
+                    var testUser = UserController.GetUserByEmail(PortalId, userName); // one additonal call to db to see if an account with that email actually exists
+                    if(testUser != null)
+                    {
+                        userName = testUser.Username; //we need the username of the account in order to authenticate in the next step
+                    }
+                }
+
+				var objUser = UserController.ValidateUser(PortalId, userName, txtPassword.Text, "DNN", string.Empty, PortalSettings.PortalName, IPAddress, ref loginStatus);
 				var authenticated = Null.NullBoolean;
 				var message = Null.NullString;
 				if (loginStatus == UserLoginStatus.LOGIN_USERNOTAPPROVED)
@@ -265,9 +347,20 @@ namespace DotNetNuke.Modules.Admin.Authentication
 				{
 					authenticated = (loginStatus != UserLoginStatus.LOGIN_FAILURE);
 				}
+
+                if (loginStatus != UserLoginStatus.LOGIN_FAILURE && PortalController.GetPortalSettingAsBoolean("Registration_UseEmailAsUserName", PortalId, false))
+                {
+                    //make sure internal username matches current e-mail address
+                    if (objUser.Username.ToLower() != objUser.Email.ToLower())
+                    {
+                        UserController.ChangeUsername(objUser.UserID, objUser.Email);
+                    }
+
+                    Response.Cookies.Remove("USERNAME_CHANGED");
+                }
 				
 				//Raise UserAuthenticated Event
-                var eventArgs = new UserAuthenticatedEventArgs(objUser, userName, loginStatus, "DNN")
+				var eventArgs = new UserAuthenticatedEventArgs(objUser, userName, loginStatus, "DNN")
 				                    {
 				                        Authenticated = authenticated, 
                                         Message = message,
@@ -275,6 +368,11 @@ namespace DotNetNuke.Modules.Admin.Authentication
 				                    };
 				OnUserAuthenticated(eventArgs);
 			}
+		}
+		
+		private void OnCancelClick(object sender, EventArgs e)
+		{
+			Response.Redirect(RedirectURL, true);
 		}
 
         private bool HasSocialAuthenticationEnabled()

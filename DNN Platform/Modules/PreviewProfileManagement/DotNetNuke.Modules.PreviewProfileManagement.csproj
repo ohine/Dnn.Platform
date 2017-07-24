@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,7 +13,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DotNetNuke.Modules.PreviewProfileManagement</RootNamespace>
     <AssemblyName>DotNetNuke.Modules.PreviewProfileManagement</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <UseIISExpress>false</UseIISExpress>
     <TargetFrameworkProfile />
     <FileUpgradeFlags>
@@ -24,6 +24,8 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Evoq.Content\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,6 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\DotNetNuke.Modules.PreviewProfileManagement.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -45,12 +48,9 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\DotNetNuke.Modules.PreviewProfileManagement.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotNetNuke.WebUtility">
-      <HintPath>..\..\Controls\DotNetNuke.WebUtility\bin\DotNetNuke.WebUtility.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -58,9 +58,9 @@
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
-    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
@@ -102,6 +102,13 @@
     <Content Include="Images\DevicePreview_Standard_32X32.png" />
     <Content Include="packages.config" />
     <Content Include="Module.build" />
+    <Content Include="web.config" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="license.txt" />
@@ -119,6 +126,10 @@
       <Project>{DDF18E36-41A0-4CA7-A098-78CA6E6F41C1}</Project>
       <Name>DotNetNuke.Instrumentation</Name>
       <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DotNetNuke.WebUtility\DotNetNuke.WebUtility.vbproj">
+      <Project>{4912f062-f8a8-4f9d-8f8e-244ebee1acbd}</Project>
+      <Name>DotNetNuke.WebUtility</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\DotNetNuke.Web\DotNetNuke.Web.csproj">
       <Project>{8DA31B98-5E8E-4243-8967-D4CF7DC622CB}</Project>
@@ -160,4 +171,11 @@
     </VisualStudio>
   </ProjectExtensions>
   <Import Project="Module.build" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
 </Project>

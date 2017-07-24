@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -31,23 +32,22 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Hosting;
 using System.Web.Http;
 using System.Web.UI.WebControls;
 using ClientDependency.Core;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
+using DotNetNuke.Common.Utils;
 using DotNetNuke.Entities.Host;
 using DotNetNuke.Entities.Icons;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Entities.Users;
 using DotNetNuke.Instrumentation;
 using DotNetNuke.Security;
+using DotNetNuke.Security.Permissions;
 using DotNetNuke.Services.FileSystem;
 using DotNetNuke.Services.Localization;
 using DotNetNuke.Web.Api;
@@ -227,10 +227,6 @@ namespace DotNetNuke.Web.InternalServices
                                 }, mediaTypeFormatter, "text/plain");
                         }
 
-                        var root = AppDomain.CurrentDomain.BaseDirectory;
-                        returnFileDto.FilePath = returnFileDto.FilePath.Replace(root, "~/");
-                        returnFileDto.FilePath = VirtualPathUtility.ToAbsolute(returnFileDto.FilePath);
-
                         return Request.CreateResponse(HttpStatusCode.OK, returnFileDto, mediaTypeFormatter, "text/plain");
                     });
 
@@ -289,6 +285,10 @@ namespace DotNetNuke.Web.InternalServices
                     return savedFileDto;
                 }
 
+                // FIX DNN-5917
+                fileName = SanitizeFileName(fileName);
+                // END FIX
+
                 if (!overwrite && FileManager.Instance.FileExists(folderInfo, fileName, true))
                 {
                     errorMessage = GetLocalizedString("AlreadyExists");
@@ -306,16 +306,65 @@ namespace DotNetNuke.Web.InternalServices
                 }
 
                 errorMessage = "";
-                savedFileDto.FileId = file.FileId.ToString();
-                savedFileDto.FilePath = Path.Combine(folderInfo.PhysicalPath, fileName);
+                savedFileDto.FileId = file.FileId.ToString(CultureInfo.InvariantCulture);
+                savedFileDto.FilePath = FileManager.Instance.GetUrl(file);
                 return savedFileDto;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.Message);
+                Logger.Error(ex);
                 errorMessage = ex.Message;
                 return savedFileDto;
             }
+        }
+
+        /// <summary>
+        /// Sanitizes the upload filename to follow RFC2396 URL spec
+        /// </summary>
+        public static string SanitizeFileName(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) return null;
+
+            var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+            if (string.IsNullOrEmpty(fileNameWithoutExt)) return null;
+
+            var fileNameExt = Path.GetExtension(fileName);
+
+            var disallowedChars = new[]
+                {
+                    ';',
+                    '/',
+                    '?',
+                    ':',
+                    '@',
+                    '&',
+                    '=',
+                    '+',
+                    '$',
+                    ',',
+                    '<',
+                    '>',
+                    '#',
+                    '%',
+                    '"',
+                    '\'',
+                    '{',
+                    '}',
+                    '|',
+                    '\\',
+                    '^',
+                    '[',
+                    ']',
+                    '`'
+                };
+
+            foreach (var c in disallowedChars)
+            {
+                if (fileNameWithoutExt.Contains(c))
+                    fileNameWithoutExt = fileNameWithoutExt.Replace(c, '_');
+            }
+
+            return string.Format("{0}{1}", fileNameWithoutExt, fileNameExt);
         }
 
         private static string GetLocalizedString(string key)
@@ -455,14 +504,18 @@ namespace DotNetNuke.Web.InternalServices
                     }
                 }
 
-                if (!PortalSecurity.IsInRoles(userInfo, portalSettings, folderInfo.FolderPermissions.ToString("WRITE"))
-                    && !PortalSecurity.IsInRoles(userInfo, portalSettings, folderInfo.FolderPermissions.ToString("ADD")))
+                if (!FolderPermissionController.HasFolderPermission(portalSettings.PortalId, folder, "WRITE")
+                    && !FolderPermissionController.HasFolderPermission(portalSettings.PortalId, folder, "ADD"))
                 {
                     result.Message = GetLocalizedString("NoPermission");
                     return result;
                 }
 
                 IFileInfo file;
+
+                // FIX DNN-5917
+                fileName = SanitizeFileName(fileName);
+                // END FIX
 
                 if (!overwrite && FileManager.Instance.FileExists(folderInfo, fileName, true))
                 {
@@ -495,9 +548,23 @@ namespace DotNetNuke.Web.InternalServices
                 var path = GetUrl(result.FileId);
                 using (reader = new BinaryReader(fileContent))
                 {
-                    var size = IsImage(fileName) ?
-                        ImageHeader.GetDimensions(reader) :
-                        new Size(32, 32);
+                    Size size;
+                    if (IsImage(fileName))
+                    {
+                        try
+                        {
+                            size = ImageHeader.GetDimensions(reader);
+                        }
+                        catch (ArgumentException exc)
+                        {
+                            Logger.Warn("Unable to get image dimensions for image file", exc);
+                            size = new Size(32, 32);
+                        }
+                    }
+                    else
+                    {
+                        size = new Size(32, 32);
+                    }
 
                     result.Orientation = size.Orientation();
                 }
@@ -514,7 +581,7 @@ namespace DotNetNuke.Web.InternalServices
             }
             catch (Exception exe)
             {
-                Logger.Error(exe.Message);
+                Logger.Error(exe);
                 result.Message = exe.Message;
                 return result;
             }
@@ -535,6 +602,7 @@ namespace DotNetNuke.Web.InternalServices
 
         [HttpPost]
         [IFrameSupportedValidateAntiForgeryToken]
+        [AllowAnonymous]
         public Task<HttpResponseMessage> UploadFromLocal()
         {
             var request = Request;
@@ -592,7 +660,10 @@ namespace DotNetNuke.Web.InternalServices
                                 {
                                     fileName = Path.GetFileName(fileName);
                                 }
-                                stream = item.ReadAsStreamAsync().Result;
+                                if (Regex.Match(fileName, "[\\\\/]\\.\\.[\\\\/]").Success==false )
+                                    {
+                                        stream = item.ReadAsStreamAsync().Result;
+                                    }
                                 break;
                         }
                     }
@@ -628,6 +699,7 @@ namespace DotNetNuke.Web.InternalServices
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public HttpResponseMessage UploadFromUrl(UploadByUrlDto dto)
         {
             FileUploadDto result;
@@ -635,7 +707,14 @@ namespace DotNetNuke.Web.InternalServices
             Stream responseStream = null;
             var mediaTypeFormatter = new JsonMediaTypeFormatter();
             mediaTypeFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/plain"));
-            try
+
+            if (VerifySafeUrl(dto.Url) == false)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest);
+            }
+
+
+    try
             {
                 var request = (HttpWebRequest) WebRequest.Create(dto.Url);
                 request.Credentials = CredentialCache.DefaultCredentials;
@@ -645,31 +724,20 @@ namespace DotNetNuke.Web.InternalServices
                 {
                     throw new Exception("No server response");
                 }
-                var inMemoryStream = new MemoryStream();
-                {
-                    var count = 0;
-                    do
-                    {
-                        var buffer = new byte[4096];
-                        count = responseStream.Read(buffer, 0, 4096);
-                        inMemoryStream.Write(buffer, 0, count);
-                    } while (responseStream.CanRead && count > 0);
 
-                    var segments = dto.Url.Split('/');
-                    var fileName = segments[segments.Length - 1];
-                    result = UploadFile(inMemoryStream, PortalSettings, UserInfo, dto.Folder.TextOrEmpty(), dto.Filter.TextOrEmpty(),
-                        fileName, dto.Overwrite, dto.IsHostMenu, dto.Unzip);
+                var fileName = new Uri(dto.Url).Segments.Last();                    
+                result = UploadFile(responseStream, PortalSettings, UserInfo, dto.Folder.TextOrEmpty(), dto.Filter.TextOrEmpty(),
+                    fileName, dto.Overwrite, dto.IsHostMenu, dto.Unzip);
 
-                    /* Response Content Type cannot be application/json 
-                     * because IE9 with iframe-transport manages the response 
-                     * as a file download 
-                     */
-                    return Request.CreateResponse(
-                        HttpStatusCode.OK,
-                        result,
-                        mediaTypeFormatter,
-                        "text/plain");
-                }
+                /* Response Content Type cannot be application/json 
+                    * because IE9 with iframe-transport manages the response 
+                    * as a file download 
+                    */
+                return Request.CreateResponse(
+                    HttpStatusCode.OK,
+                    result,
+                    mediaTypeFormatter,
+                    "text/plain");
             }
             catch (Exception ex)
             {
@@ -696,6 +764,40 @@ namespace DotNetNuke.Web.InternalServices
             }
         }
 
+        private bool VerifySafeUrl(string url)
+        {
+            Uri uri = new Uri(url);
+            if (uri.Scheme == "http" ||uri.Scheme == "https")
+            {
+                
+                if (!uri.Host.Contains("."))
+                {
+                    return false;
+                }
+                if (uri.IsLoopback)
+                {
+                    return false;
+                }
+                if (uri.PathAndQuery.Contains("#")  || uri.PathAndQuery.Contains(":"))
+                {
+                    return false;
+                }
+
+                if (uri.Host.StartsWith("10") || uri.Host.StartsWith("172") || uri.Host.StartsWith("192"))
+                {
+                    //check nonroutable IP addresses
+                    if (NetworkUtils.IsIPInRange(uri.Host, "10.0.0.0", "8") ||
+                        NetworkUtils.IsIPInRange(uri.Host, "172.16.0.0", "12") ||
+                        NetworkUtils.IsIPInRange(uri.Host, "192.168.0.0", "16"))
+                    {
+                        return false;
+                    }
+                }
+
+            return true;
+            }
+            return false;
+        }
     }
 
 }

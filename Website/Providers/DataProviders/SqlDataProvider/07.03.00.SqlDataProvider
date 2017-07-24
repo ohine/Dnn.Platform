@@ -32,7 +32,11 @@ IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS
     END 
 GO
 
-ALTER PROCEDURE {databaseOwner}[{objectQualifier}UpdateServer]
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}UpdateServer]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE {databaseOwner}[{objectQualifier}UpdateServer]
+GO
+
+CREATE PROCEDURE {databaseOwner}[{objectQualifier}UpdateServer]
     @ServerID           INT,
     @URL                NVARCHAR(255),
     @UniqueId           NVARCHAR(200),
@@ -49,7 +53,11 @@ AS
 GO
 
 /***** Task DNN-DNN-3371: update sp Journal_Get to can check security setting, also update func Journal_User_Permissions to get correct role info. *****/
-ALTER PROCEDURE {databaseOwner}[{objectQualifier}Journal_Get]
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}Journal_Get]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}Journal_Get
+GO
+
+CREATE PROCEDURE {databaseOwner}[{objectQualifier}Journal_Get]
     @PortalId int,
     @CurrentUserId int,
     @JournalId int,
@@ -77,8 +85,11 @@ ALTER PROCEDURE {databaseOwner}[{objectQualifier}Journal_Get]
                 ((@IncludeAllItems = 1) AND (j.JournalId = @JournalId))
 GO
 
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}Journal_User_Permissions]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
+DROP FUNCTION {databaseOwner}[{objectQualifier}Journal_User_Permissions]
+GO
 
-ALTER FUNCTION {databaseOwner}[{objectQualifier}Journal_User_Permissions]
+CREATE FUNCTION {databaseOwner}[{objectQualifier}Journal_User_Permissions]
 (
     @PortalId int,
     @UserId int,
@@ -128,7 +139,12 @@ GO
 
 /* DNN-5107 Improve Startup Performance - Cache Settings */
 /*********************************************************/
-ALTER PROCEDURE {databaseOwner}[{objectQualifier}GetTabSettings]
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}GetTabSettings]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE {databaseOwner}[{objectQualifier}GetTabSettings]
+GO
+
+CREATE PROCEDURE {databaseOwner}[{objectQualifier}GetTabSettings]
     @PortalId Int
 AS
 	BEGIN
@@ -144,6 +160,10 @@ AS
 		WHERE  (PortalId = @PortalId)
 		ORDER BY TS.TabID
 	END
+GO
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}GetModuleSettingsByTab]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE {databaseOwner}[{objectQualifier}GetModuleSettingsByTab]
 GO
 
 CREATE PROCEDURE {databaseOwner}[{objectQualifier}GetModuleSettingsByTab]
@@ -164,6 +184,9 @@ AS
 	END
 GO
 
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}GetTabModuleSettingsByTab]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE {databaseOwner}[{objectQualifier}GetTabModuleSettingsByTab]
+GO
 
 CREATE PROCEDURE {databaseOwner}[{objectQualifier}GetTabModuleSettingsByTab]
     @TabId Int
@@ -183,6 +206,9 @@ AS
 	END
 GO
 
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}GetTabsByTabModuleID]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE {databaseOwner}[{objectQualifier}GetTabsByTabModuleID]
+GO
 
 CREATE PROCEDURE {databaseOwner}[{objectQualifier}GetTabsByTabModuleID]
 	@TabModuleID Int -- NOT Null
@@ -207,7 +233,11 @@ GO
 /* DNN-5126 Need AffiliateController.GetAffiliate(int affiliateID) */
 /*******************************************************************/
 
-ALTER PROCEDURE {databaseOwner}[{objectQualifier}GetAffiliate]
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}GetAffiliate]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE {databaseOwner}[{objectQualifier}GetAffiliate]
+GO
+
+CREATE PROCEDURE {databaseOwner}[{objectQualifier}GetAffiliate]
 	@AffiliateId int
 AS
 
@@ -223,8 +253,11 @@ ALTER TABLE {databaseOwner}{objectQualifier}Schedule
 	ADD ScheduleStartDate DATETIME NULL 
 GO
 
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}UpdateSchedule]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}[{objectQualifier}UpdateSchedule]
+GO
 
-ALTER PROCEDURE {databaseOwner}{objectQualifier}UpdateSchedule
+CREATE PROCEDURE {databaseOwner}{objectQualifier}UpdateSchedule
 	@ScheduleID int
 	,@TypeFullName varchar(200)
 	,@TimeLapse int
@@ -261,8 +294,10 @@ UPDATE {databaseOwner}{objectQualifier}Schedule
 	WHERE ScheduleID = @ScheduleID
 GO
 
-
-ALTER PROCEDURE {databaseOwner}{objectQualifier}AddSchedule
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}AddSchedule]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}[{objectQualifier}AddSchedule]
+GO
+CREATE PROCEDURE {databaseOwner}{objectQualifier}AddSchedule
 
 	@TypeFullName varchar(200)
 	,@TimeLapse int
@@ -322,7 +357,11 @@ GO
 /* DNN-4991 Scheduler main view */
 /********************************/
 
-ALTER PROCEDURE {databaseOwner}{objectQualifier}GetSchedule
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetSchedule]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+    DROP PROCEDURE {databaseOwner}{objectQualifier}GetSchedule
+GO
+
+CREATE PROCEDURE {databaseOwner}{objectQualifier}GetSchedule
  @Server varchar(150)
 AS
 BEGIN
@@ -355,8 +394,11 @@ IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{obj
     END 
 GO
 
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}UpdateServerActivity]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}UpdateServerActivity
+GO
 
-ALTER PROCEDURE {databaseOwner}{objectQualifier}UpdateServerActivity
+CREATE PROCEDURE {databaseOwner}{objectQualifier}UpdateServerActivity
     @ServerName			NVARCHAR(50),
     @IISAppName			NVARCHAR(200),
     @CreatedDate		DATETIME,
@@ -404,6 +446,38 @@ GO
 /* DNN-5192 Improve Edit Page Performance - Unneccessary DB Calls */
 /******************************************************************/
 
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPermissionsByTab]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPermissionsByTab
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPermissionsByPortalDesktopModule]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPermissionsByPortalDesktopModule
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPermissionsByFolder]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPermissionsByFolder
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPermissionsByModuleID]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPermissionsByModuleID
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPermissionsByModuleDefID]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPermissionsByModuleDefID
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPermissionByCodeAndKey]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPermissionByCodeAndKey
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPermission]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPermission
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPermissions]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPermissions
+GO
+
 CREATE PROCEDURE {databaseOwner}{objectQualifier}GetPermissions
 AS
 	SELECT * FROM {databaseOwner}{objectQualifier}Permission
@@ -413,16 +487,40 @@ GO
 /* API Cleanup */
 /***************/
 
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPortalAlias]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPortalAlias
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPortalAliasByPortalAliasID]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPortalAliasByPortalAliasID
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPortalAliasByPortalID]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPortalAliasByPortalID
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetPortalAliases]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetPortalAliases
+GO
+
 CREATE PROCEDURE {databaseOwner}{objectQualifier}GetPortalAliases
 AS
 	SELECT * FROM {databaseOwner}{objectQualifier}PortalAlias
+GO
+
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetRecycleModules]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}GetRecycleModules
 GO
 
 
 /* DNN-5249 SI: Page Header Tags are truncated in site template - import / export */
 /**********************************************************************************/
 
-ALTER PROCEDURE {databaseOwner}{objectQualifier}AddTabToEnd
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}AddTabToEnd]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}{objectQualifier}AddTabToEnd
+GO
+
+CREATE PROCEDURE {databaseOwner}{objectQualifier}AddTabToEnd
 	@ContentItemID			int,
     @PortalID				int,
     @UniqueId				uniqueidentifier,
@@ -530,6 +628,9 @@ IF NOT EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwne
 	END
 GO
 
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}GetContentWorkflowSource]') AND OBJECTPROPERTY(id, N'IsProcedure') = 1)
+	DROP PROCEDURE {databaseOwner}[{objectQualifier}GetContentWorkflowSource]
+GO
 
 CREATE PROCEDURE {databaseOwner}[{objectQualifier}GetContentWorkflowSource]
 	@WorkflowID INT,
@@ -571,12 +672,14 @@ INSERT INTO {databaseOwner}[{objectQualifier}EventLogTypes] ([LogTypeKey], [LogT
 
 INSERT INTO {databaseOwner}[{objectQualifier}EventLogConfig] ([LogTypeKey], [LogTypePortalID], [LoggingIsActive], [KeepMostRecent], [EmailNotificationIsActive], [NotificationThreshold], [NotificationThresholdTime], [NotificationThresholdTimeType], [MailFromAddress], [MailToAddress]) VALUES (N'FOLDER_MOVED', NULL, 1, 10, 0, 1, 1, 1, N'', N'')
 
+/***** Fix bug Content-2547: add sp UpdateFileHashCode. *****/
+IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'{databaseOwner}[{objectQualifier}UpdateFileHashCode]') AND OBJECTPROPERTY(id, N'IsPROCEDURE') = 1)
+  DROP PROCEDURE {databaseOwner}[{objectQualifier}UpdateFileHashCode]
 GO
 
-/***** Fix bug Content-2547: add sp UpdateFileHashCode. *****/
 CREATE PROCEDURE {databaseOwner}[{objectQualifier}UpdateFileHashCode]
-    @FileId                  Int,         -- Not Null
-    @HashCode VARCHAR(40)  -- Not NULL
+	@FileId				  Int, 		-- Not Null
+	@HashCode VARCHAR(40)  -- Not NULL
 AS
 BEGIN
     UPDATE {databaseOwner}[{objectQualifier}Files]

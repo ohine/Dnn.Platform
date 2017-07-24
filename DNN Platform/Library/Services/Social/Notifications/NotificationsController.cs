@@ -174,23 +174,6 @@ namespace DotNetNuke.Services.Social.Notifications
                 throw new ArgumentException(string.Format(Localization.Localization.GetString("MsgToListTooBigError", Localization.Localization.ExceptionsResourceFile), ConstMaxTo, sbTo.Length));
             }
 
-            //Cannot exceed RecipientLimit
-            //var recipientCount = 0;
-            //if (users != null) recipientCount += users.Count;
-            //if (roles != null) recipientCount += roles.Count;
-            //if (recipientCount > InternalMessagingController.Instance.RecipientLimit(pid))
-            //{
-            //    throw new RecipientLimitExceededException(Localization.Localization.GetString("MsgRecipientLimitExceeded", Localization.Localization.ExceptionsResourceFile));
-            //}
-
-            //Profanity Filter
-            //var profanityFilterSetting = GetPortalSetting("MessagingProfanityFilters", pid, "NO");
-            //if (profanityFilterSetting.Equals("YES", StringComparison.InvariantCultureIgnoreCase))
-            //{
-            //    notification.Subject = InputFilter(notification.Subject);
-            //    notification.Body = InputFilter(notification.Body);
-            //}
-
             notification.To = sbTo.ToString().Trim(',');
             if (notification.ExpirationDate != new DateTime())
             {
@@ -261,12 +244,18 @@ namespace DotNetNuke.Services.Social.Notifications
                                                                                       notificationType.Description,
                                                                                       (int)notificationType.TimeToLive.TotalMinutes == 0 ? Null.NullInteger : (int)notificationType.TimeToLive.TotalMinutes,
                                                                                       notificationType.DesktopModuleId,
-                                                                                      GetCurrentUserId());
+                                                                                      GetCurrentUserId(), 
+                                                                                      notificationType.IsTask);
         }
 
         public virtual void DeleteNotification(int notificationId)
         {
             _dataService.DeleteNotification(notificationId);
+        }
+
+        public int DeleteUserNotifications(UserInfo user)
+        {
+            return _dataService.DeleteUserNotifications(user.UserID, user.PortalID);
         }
 
         public virtual void DeleteNotificationRecipient(int notificationId, int userId)
@@ -326,7 +315,9 @@ namespace DotNetNuke.Services.Social.Notifications
             {
                 pid = PortalController.GetEffectivePortalId(portalId);
             }
-            return CBO.FillCollection<Notification>(_dataService.GetNotifications(userId, pid, afterNotificationId, numberOfRecords));
+            return userId <= 0
+                ? new List<Notification>(0)
+                : CBO.FillCollection<Notification>(_dataService.GetNotifications(userId, pid, afterNotificationId, numberOfRecords));
         }
 
         public virtual NotificationType GetNotificationType(int notificationTypeId)

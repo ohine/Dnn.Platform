@@ -47,9 +47,6 @@ using ICSharpCode.SharpZipLib.Zip;
 using Telerik.Web.UI;
 
 using FileInfo = DotNetNuke.Services.FileSystem.FileInfo;
-using Directory = Pri.LongPath.Directory;
-using File = Pri.LongPath.File;
-using DirectoryInfo = Pri.LongPath.DirectoryInfo;
 
 #endregion
 
@@ -57,7 +54,7 @@ namespace DotNetNuke.Common.Utilities
 {
     public class FileSystemUtils
     {
-    	private static readonly ILog Logger = LoggerSource.Instance.GetLogger(typeof (FileSystemUtils));
+        private static readonly ILog Logger = LoggerSource.Instance.GetLogger(typeof(FileSystemUtils));
         #region Private Methods
 
         private static string CreateFile(IFolderInfo folder, string fileName, string contentType, Stream fileContent, bool unzip, bool overwrite, bool checkPermissions)
@@ -134,8 +131,8 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Writes a Stream to the appropriate File Storage
         /// </summary>
-		/// <param name="objResponse">The Id of the File</param>
-		/// <param name="objStream">The Input Stream</param>
+        /// <param name="objResponse">The Id of the File</param>
+        /// <param name="objStream">The Input Stream</param>
         /// <remarks>
         /// </remarks>
         /// <history>
@@ -160,10 +157,10 @@ namespace DotNetNuke.Common.Utilities
                 //Read the bytes.
                 while (lngDataToRead > 0)
                 {
-					//Verify that the client is connected.
+                    //Verify that the client is connected.
                     if (objResponse.IsClientConnected)
                     {
-						//Read the data in buffer
+                        //Read the data in buffer
                         intLength = objStream.Read(bytBuffer, 0, 10000);
 
                         //Write the data to the current output stream.
@@ -272,8 +269,8 @@ namespace DotNetNuke.Common.Utilities
         /// </summary>
         /// <param name="FileName">File name</param>
         /// <param name="PortalId">The Id of the Portal</param>
-		/// <param name="Folder">the folder to save file</param>
-		/// <param name="HomeDirectoryMapPath"></param>
+        /// <param name="Folder">the folder to save file</param>
+        /// <param name="HomeDirectoryMapPath"></param>
         /// <param name="contentType">The type of the content</param>
         /// <remarks>This method adds a new file
         /// </remarks>
@@ -333,7 +330,7 @@ namespace DotNetNuke.Common.Utilities
             var fileName = GetFileName(strFile);
 
             var file = (FileInfo)fileManager.GetFile(folder, fileName);
-            
+
             if (file == null)
             {
                 file = new FileInfo { PortalId = PortalId, FolderId = folder.FolderID, FileName = fileName };
@@ -357,9 +354,9 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Adds a Folder
         /// </summary>
-		/// <param name="portalSettings">The Portal Settings</param>
-		/// <param name="parentFolder">The parent folder</param>
-		/// <param name="newFolder">The new folder name</param>
+        /// <param name="portalSettings">The Portal Settings</param>
+        /// <param name="parentFolder">The parent folder</param>
+        /// <param name="newFolder">The new folder name</param>
         /// <history>
         ///     [cnurse]    04/26/2006  Created
         /// </history>
@@ -383,10 +380,10 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Adds a Folder with a specificed unique identifier
         /// </summary>
-		/// <param name="portalSettings">The Portal Settings</param>
-		/// <param name="parentFolder">The parent folder</param>
-		/// <param name="newFolder">The new folder name</param>
-		/// <param name="storageLocation">The storage location</param>
+        /// <param name="portalSettings">The Portal Settings</param>
+        /// <param name="parentFolder">The parent folder</param>
+        /// <param name="newFolder">The new folder name</param>
+        /// <param name="storageLocation">The storage location</param>
         /// <history>
         ///     [vnguyen]    06/04/2010  Created
         /// </history>
@@ -421,24 +418,24 @@ namespace DotNetNuke.Common.Utilities
                     folderMapping = FolderMappingController.Instance.GetDefaultFolderMapping(portalSettings.PortalId);
                     break;
             }
-            
+
             if (folderMapping != null)
             {
                 var folderManager = FolderManager.Instance;
 
-				//get relative folder path.
+                //get relative folder path.
                 var folderPath = PathUtils.Instance.GetRelativePath(folderMapping.PortalID, parentFolder) + newFolder;
 
-				if (Path.IsPathRooted(folderPath))
-				{
-					folderPath = folderPath.TrimStart(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
-				}
+                if (Path.IsPathRooted(folderPath))
+                {
+                    folderPath = folderPath.TrimStart(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+                }
 
-				folderPath = folderPath.Replace("\\", "/");
-                
+                folderPath = folderPath.Replace("\\", "/");
+
                 var folder = folderManager.AddFolder(folderMapping, folderPath);
                 folder.UniqueId = uniqueId;
-                
+
                 folderManager.UpdateFolder(folder);
             }
         }
@@ -448,10 +445,10 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Creates a User Folder
         /// </summary>
-		/// <param name="portalSettings">Portal Settings for the Portal</param>
+        /// <param name="portalSettings">Portal Settings for the Portal</param>
         /// <param name="parentFolder">The Parent Folder Name</param>
         /// <param name="userID">The UserID, in order to generate the path/foldername</param>
-		/// <param name="storageLocation">The Storage Location</param>
+        /// <param name="storageLocation">The Storage Location</param>
         /// <remarks>
         /// </remarks>
         /// <history>
@@ -488,11 +485,11 @@ namespace DotNetNuke.Common.Utilities
             FileStream fs = null;
             try
             {
-				//Open File Stream
+                //Open File Stream
                 var crc = new Crc32();
                 fs = File.OpenRead(filePath);
-				
-				//Read file into byte array buffer
+
+                //Read file into byte array buffer
                 var buffer = new byte[fs.Length];
 
                 fs.Read(buffer, 0, buffer.Length);
@@ -728,7 +725,7 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Trys to delete a file from the file system
         /// </summary>
-		/// <param name="fileName">The name of the file</param>
+        /// <param name="fileName">The name of the file</param>
         /// <history>
         ///     [cnurse]    04/26/2006  Created
         /// </history>
@@ -746,7 +743,7 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Deletes a file
         /// </summary>
-		/// <param name="sourceFile">The File to delete</param>
+        /// <param name="sourceFile">The File to delete</param>
         /// <param name="settings">The Portal Settings for the Portal/Host Account</param>
         /// <remarks>
         /// </remarks>
@@ -768,7 +765,7 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Deletes a file
         /// </summary>
-		/// <param name="sourceFile">The File to delete</param>
+        /// <param name="sourceFile">The File to delete</param>
         /// <param name="settings">The Portal Settings for the Portal/Host Account</param>
         /// <param name="clearCache"></param>
         /// <remarks>
@@ -790,7 +787,7 @@ namespace DotNetNuke.Common.Utilities
             var fileName = GetFileName(sourceFile);
             var portalID = GetFolderPortalID(settings);
             var folderPath = Globals.GetSubFolderPath(sourceFile, portalID);
-            
+
             var folder = folderManager.GetFolder(portalID, folderPath);
 
             if (folder != null)
@@ -801,7 +798,7 @@ namespace DotNetNuke.Common.Utilities
                 {
                     try
                     {
-						//try and delete the Insecure file
+                        //try and delete the Insecure file
                         fileManager.DeleteFile(file);
                     }
                     catch (PermissionsNotMetException)
@@ -823,7 +820,7 @@ namespace DotNetNuke.Common.Utilities
                     }
                 }
             }
-            
+
             return retValue;
         }
 
@@ -858,7 +855,7 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Moved directly from FileManager code, probably should make extension lookup more generic
         /// </summary>
-		/// <param name="fileLoc">File Location</param>
+        /// <param name="fileLoc">File Location</param>
         /// <remarks>
         /// </remarks>
         /// <history>
@@ -934,9 +931,9 @@ namespace DotNetNuke.Common.Utilities
                     fileManager.WriteFileToResponse(file, contentDisposition);
                     download = true;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-					Logger.Error(ex);
+                    Logger.Error(ex);
                 }
             }
 
@@ -1007,7 +1004,7 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Gets all the folders for a Portal
         /// </summary>
-		/// <param name="portalID">The Id of the Portal</param>
+        /// <param name="portalID">The Id of the Portal</param>
         /// <remarks>
         /// </remarks>
         /// <history>
@@ -1040,8 +1037,8 @@ namespace DotNetNuke.Common.Utilities
         /// <summary>
         /// Gets all the subFolders for a Parent
         /// </summary>
-		/// <param name="portalId">The Id of the Portal</param>
-		/// <param name="parentFolder"></param>
+        /// <param name="portalId">The Id of the Portal</param>
+        /// <param name="parentFolder"></param>
         /// <remarks>
         /// </remarks>
         /// <history>
@@ -1070,16 +1067,16 @@ namespace DotNetNuke.Common.Utilities
         public static ArrayList GetFoldersByUser(int portalID, bool includeSecure, bool includeDatabase, string permissions)
         {
             var userFoldersArray = new ArrayList();
-            
+
             var user = UserController.Instance.GetCurrentUserInfo();
 
             //Create Home folder if it doesn't exist
-            var userFolders = (!includeSecure && !includeDatabase) ? FolderManager.Instance.GetFileSystemFolders(user, permissions) : 
+            var userFolders = (!includeSecure && !includeDatabase) ? FolderManager.Instance.GetFileSystemFolders(user, permissions) :
                 FolderManager.Instance.GetFolders(user, permissions);
 
             foreach (var userFolder in userFolders)
             {
-				//Add User folder
+                //Add User folder
                 userFoldersArray.Add((FolderInfo)userFolder);
             }
 
@@ -1127,7 +1124,7 @@ namespace DotNetNuke.Common.Utilities
                         fileManager.MoveFile(file, destFolder);
 
                         fileManager.RenameFile(file, destFileName);
-                        
+
                     }
                 }
             }
@@ -1297,16 +1294,16 @@ namespace DotNetNuke.Common.Utilities
             FolderManager.Instance.Synchronize(PortalId, relativePath, isRecursive, true);
         }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="PortalId"></param>
-		/// <param name="physicalPath"></param>
-		/// <param name="relativePath"></param>
-		/// <param name="isRecursive"></param>
-		/// <param name="syncFiles"></param>
-		/// <param name="forceFolderSync"></param>
-		/// <param name="hideSystemFolders"></param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="PortalId"></param>
+        /// <param name="physicalPath"></param>
+        /// <param name="relativePath"></param>
+        /// <param name="isRecursive"></param>
+        /// <param name="syncFiles"></param>
+        /// <param name="forceFolderSync"></param>
+        /// <param name="hideSystemFolders"></param>
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("Deprecated in DNN 6.0.  It has been replaced by FolderManager.Instance.Synchronize(int portalID, string relativePath, bool isRecursive, bool syncFiles) ")]
         public static void SynchronizeFolder(int PortalId, string physicalPath, string relativePath, bool isRecursive, bool syncFiles, bool forceFolderSync, bool hideSystemFolders)
@@ -1388,9 +1385,9 @@ namespace DotNetNuke.Common.Utilities
                                 }
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
-							Logger.Error(ex);
+                            Logger.Error(ex);
                         }
                     }
                     objZipEntry = zipStream.GetNextEntry();
@@ -1552,68 +1549,6 @@ namespace DotNetNuke.Common.Utilities
                 }
             }
             return strExceptions;
-        }
-
-        public static void DeleteFilesRecursive(string strRoot, string filter)
-        {
-            if (!String.IsNullOrEmpty(strRoot))
-            {
-                if (Directory.Exists(strRoot))
-                {
-                    foreach (string strFolder in Directory.GetDirectories(strRoot))
-                    {
-                        var directory = new DirectoryInfo(strFolder);
-                        if ((directory.Attributes & FileAttributes.Hidden) == 0 && (directory.Attributes & FileAttributes.System) == 0)
-                        {
-                            DeleteFilesRecursive(strFolder, filter);
-                        }
-                    }
-                    foreach (string strFile in Directory.GetFiles(strRoot, "*" + filter))
-                    {
-                        try
-                        {
-                            DeleteFile(strFile);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex);
-                        }
-                    }
-                }
-            }
-        }
-
-        public static void DeleteFolderRecursive(string strRoot)
-        {
-            if (!String.IsNullOrEmpty(strRoot))
-            {
-                if (Directory.Exists(strRoot))
-                {
-                    foreach (string strFolder in Directory.GetDirectories(strRoot))
-                    {
-                        DeleteFolderRecursive(strFolder);
-                    }
-                    foreach (string strFile in Directory.GetFiles(strRoot))
-                    {
-                        try
-                        {
-                            DeleteFile(strFile);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex);
-                        }
-                    }
-                    try
-                    {
-                        Directory.Delete(strRoot);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error(ex);
-                    }
-                }
-            }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
